@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nikhil Kumar — 3D</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('portfolio-theme');
+      document.documentElement.setAttribute('data-theme', saved === 'dark' ? 'dark' : 'light');
+    } catch (e) { document.documentElement.setAttribute('data-theme', 'light'); }
+  })();
+</script>
+<style>
+  :root {
+    --bg: #FCFCFA; --bg-raised: #F2F1EC; --text: #0A0A0A; --text-soft: rgba(10,10,10,0.56);
+    --line: rgba(10,10,10,0.12); --accent: #E4002B;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  :root[data-theme="dark"] {
+    --bg: #0A0A0A; --bg-raised: #151513; --text: #F5F4F0; --text-soft: rgba(245,244,240,0.56);
+    --line: rgba(245,244,240,0.14); --accent: #FF3B3B; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); overflow-x: hidden; }
+  body { transition: background-color 0.4s ease, color 0.4s ease; }
+  .section-inner { max-width: 1180px; margin: 0 auto; padding: 0 clamp(20px, 4vw, 44px); }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tag { font-size: 11px; border: 1px solid currentColor; opacity: 0.75; padding: 3px 9px; border-radius: 999px; }
+
+  .stage { position: relative; min-height: calc(100vh - 20px); display: flex; flex-direction: column; justify-content: space-between; padding: clamp(20px, 4vw, 44px); }
+  .topbar { display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 5; }
+  .nav-links { display: flex; gap: 28px; font-size: 14px; }
+  .nav-links a { color: var(--text-soft); text-decoration: none; transition: color 0.2s ease; }
+  .nav-links a:hover { color: var(--text); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .theme-toggle { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line); background: var(--bg-raised); color: var(--text); cursor: pointer; font-size: 15px; }
+
+  .hero { position: relative; display: grid; grid-template-columns: 1.1fr 0.9fr; align-items: center; gap: 24px; flex: 1; padding-top: clamp(24px, 6vh, 64px); }
+  .hero-copy { position: relative; z-index: 3; }
+  .hero h1 { margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: clamp(3.4rem, 9.5vw, 8.2rem); line-height: 0.86; letter-spacing: -0.03em; text-transform: uppercase; }
+  .hero h1 .line { display: block; overflow: hidden; }
+  .hero h1 .line span { display: inline-block; transform: translateY(115%); opacity: 0; }
+  .reveal-ready .hero h1 .line span { animation: rise 0.9s cubic-bezier(0.16,1,0.3,1) forwards; }
+  .reveal-ready .hero h1 .line:nth-child(2) span { animation-delay: .08s; }
+  @keyframes rise { to { transform: translateY(0); opacity: 1; } }
+  .hero .role { margin: 26px 0 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: clamp(1.1rem, 2vw, 1.5rem); color: var(--accent); opacity: 0; }
+  .hero p.subtitle { max-width: 40ch; margin: 12px 0 0; font-size: clamp(1rem, 1.6vw, 1.15rem); line-height: 1.5; color: var(--text-soft); opacity: 0; }
+  .reveal-ready .hero .role, .reveal-ready .hero p.subtitle { animation: fadeUp 0.8s ease forwards; animation-delay: 0.6s; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .form-panel { position: relative; height: clamp(320px, 52vw, 620px); }
+  #form-canvas { width: 100%; height: 100%; display: block; }
+  .form-caption { position: absolute; bottom: 4px; left: 0; right: 0; text-align: center; font-size: 12px; color: var(--text-soft); opacity: 0; }
+  .reveal-ready .form-caption { animation: fadeUp 0.8s ease forwards; animation-delay: 1s; }
+  .foot-row { display: flex; justify-content: space-between; align-items: flex-end; position: relative; z-index: 3; opacity: 0; }
+  .reveal-ready .foot-row { animation: fadeUp 0.8s ease forwards; animation-delay: 0.85s; }
+  .status-mark { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-soft); }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+  .scroll-cue { display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 11px; color: var(--text-soft); }
+  .scroll-cue .stem { width: 1px; height: 34px; background: var(--line); position: relative; overflow: hidden; }
+  .scroll-cue .stem::after { content: ''; position: absolute; top: -100%; left: 0; width: 100%; height: 100%; background: var(--text); animation: drip 1.8s ease-in-out infinite; }
+  @keyframes drip { 0% { top: -100%; } 60% { top: 100%; } 100% { top: 100%; } }
+
+  .section-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; margin-bottom: 32px; flex-wrap: wrap; }
+  .section-head h2 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: clamp(1.6rem, 3vw, 2.4rem); margin: 0; letter-spacing: -0.01em; }
+  .section-head p { margin: 0; color: var(--text-soft); font-size: 14px; max-width: 32ch; text-align: right; }
+
+  .explore { padding: 80px 0 60px; border-top: 1px solid var(--line); }
+  .drag-track { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x proximity; cursor: grab; padding-bottom: 6px; scrollbar-width: none; }
+  .drag-track::-webkit-scrollbar { display: none; }
+  .drag-track.dragging { cursor: grabbing; scroll-snap-type: none; }
+  .tile { flex: 0 0 auto; scroll-snap-align: start; width: 168px; height: 120px; border: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font-size: 15px; background: var(--bg-raised); transition: border-color 0.25s ease, transform 0.25s ease; user-select: none; }
+  .tile small { font-size: 11px; color: var(--text-soft); }
+  .tile:hover { border-color: var(--text); transform: translateY(-3px); }
+  .drag-hint { margin-top: 14px; font-size: 12px; color: var(--text-soft); }
+
+  .work { padding: 20px 0 90px; }
+  .work-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  .work-card { position: relative; background: var(--bg); padding: 34px 28px; min-height: 280px; overflow: hidden; }
+  .work-card .cat { font-size: 12px; color: var(--text-soft); margin-bottom: 10px; }
+  .work-card h3 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 1.5rem; margin: 0; letter-spacing: -0.01em; }
+  .work-card .stat { margin-top: 18px; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 2.6rem; letter-spacing: -0.02em; color: var(--accent); }
+  .work-card .stat small { display: block; font-family: 'Inter', sans-serif; font-weight: 400; font-size: 12px; letter-spacing: 0; color: var(--text-soft); }
+  .work-card .hover-layer { position: absolute; inset: 0; padding: 30px 28px; background: var(--text); color: var(--bg); opacity: 0; transform: translateY(8px); display: flex; flex-direction: column; justify-content: center; transition: opacity 0.35s ease, transform 0.35s ease; }
+  .work-card:hover .hover-layer, .work-card:focus-within .hover-layer, .work-card:focus .hover-layer { opacity: 1; transform: translateY(0); }
+  .work-card .hover-layer p { margin: 0 0 14px; font-size: 14px; line-height: 1.5; opacity: 0.88; }
+  @media (max-width: 900px) { .work-grid { grid-template-columns: 1fr; } }
+
+  .timeline { padding: 20px 0 90px; }
+  .tl { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+  .tl li { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 24px; padding: 22px 0; border-bottom: 1px solid var(--line); }
+  .tl .when { font-size: 13px; color: var(--text-soft); padding-top: 4px; }
+  .tl h3 { margin: 0 0 6px; font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.25rem; }
+  .tl h3 span { color: var(--text-soft); font-weight: 500; }
+  .tl p { margin: 0; color: var(--text-soft); line-height: 1.55; max-width: 70ch; }
+  @media (max-width: 640px) { .tl li { grid-template-columns: 1fr; gap: 6px; } }
+
+  .about { padding: 90px 0; border-top: 1px solid var(--line); }
+  .about-copy { max-width: 58ch; font-size: clamp(1.1rem, 2vw, 1.4rem); line-height: 1.55; margin: 0; }
+  .marquee-wrap { margin-top: 56px; overflow: hidden; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 22px 0; }
+  .marquee-track { display: flex; gap: 56px; width: max-content; animation: scroll-left 30s linear infinite; }
+  .marquee-track span { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 1.1rem; color: var(--text-soft); white-space: nowrap; }
+  @keyframes scroll-left { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  .contact { padding: 110px 0 60px; }
+  .contact h2 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: clamp(2.4rem, 7vw, 5rem); letter-spacing: -0.02em; margin: 0 0 34px; line-height: 0.95; }
+  .contact-links { display: flex; flex-wrap: wrap; gap: 14px 28px; margin-bottom: 70px; }
+  .contact-links a { color: var(--text); text-decoration: none; font-size: 15px; border-bottom: 1px solid var(--line); padding-bottom: 2px; transition: color 0.2s ease, border-color 0.2s ease; }
+  .contact-links a:hover { border-color: var(--accent); color: var(--accent); }
+  .legal-row { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; font-size: 12px; color: var(--text-soft); border-top: 1px solid var(--line); padding-top: 20px; }
+
+  @media (max-width: 820px) {
+    .hero { grid-template-columns: 1fr; }
+    .form-panel { height: 46vh; order: -1; }
+    .hero h1 { font-size: clamp(2.8rem, 15vw, 4.4rem); }
+    .foot-row { flex-direction: column; align-items: flex-start; gap: 18px; }
+    .section-head { flex-direction: column; align-items: flex-start; }
+    .section-head p { text-align: left; }
+    .nav-links { gap: 18px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero h1 .line span, .hero .role, .hero p.subtitle, .form-caption, .foot-row, .marquee-track { animation: none !important; opacity: 1 !important; transform: none !important; }
+    .scroll-cue .stem::after { animation: none; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <div class="topbar">
+    <nav class="nav-links" aria-label="Sections"><a href="#stack">Stack</a><a href="#work">Work</a><a href="#career">Career</a><a href="#contact">Contact</a></nav>
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">☀</button>
+  </div>
+  <div class="hero">
+    <div class="hero-copy">
+      <h1 aria-label="Nikhil Kumar"><span class="line"><span>Nikhil</span></span><span class="line"><span>Kumar</span></span></h1>
+      <p class="role">AI &amp; Backend Engineer</p>
+      <p class="subtitle">I build Python backends and the LLM systems that run on them: RAG pipelines, multi-agent orchestration and APIs on AWS. Backend AI Engineer at Chat360; B.Tech, IIT Jodhpur.</p>
+    </div>
+    <div class="form-panel">
+      <canvas id="form-canvas" aria-hidden="true"></canvas>
+      <p class="form-caption">Move your cursor across it.</p>
+    </div>
+  </div>
+  <div class="foot-row">
+    <div class="status-mark"><span class="status-dot"></span>Currently at Chat360, building agentic systems</div>
+    <div class="scroll-cue"><span>Scroll</span><span class="stem"></span></div>
+  </div>
+</div>
+
+<main>
+  <section class="explore" id="stack">
+    <div class="section-inner">
+      <div class="section-head"><h2>What I build with</h2><p>The tools behind the work below</p></div>
+      <div class="drag-track" id="dragTrack" tabindex="0" role="list" aria-label="Tech stack, scrollable">
+        <div class="tile" role="listitem">Python<small>Language</small></div>
+        <div class="tile" role="listitem">FastAPI<small>Backend</small></div>
+        <div class="tile" role="listitem">Django REST<small>Backend</small></div>
+        <div class="tile" role="listitem">LangGraph<small>AI / LLM</small></div>
+        <div class="tile" role="listitem">LangChain<small>AI / LLM</small></div>
+        <div class="tile" role="listitem">MCP<small>AI / LLM</small></div>
+        <div class="tile" role="listitem">Pinecone<small>Vector DB</small></div>
+        <div class="tile" role="listitem">Redis<small>Database</small></div>
+        <div class="tile" role="listitem">PostgreSQL<small>Database</small></div>
+        <div class="tile" role="listitem">RabbitMQ<small>Backend</small></div>
+        <div class="tile" role="listitem">AWS<small>Cloud</small></div>
+        <div class="tile" role="listitem">Docker<small>DevOps</small></div>
+        <div class="tile" role="listitem">React<small>Frontend</small></div>
+      </div>
+      <p class="drag-hint">Drag, scroll, or use arrow keys</p>
+    </div>
+  </section>
+
+  <section class="work" id="work">
+    <div class="section-inner">
+      <div class="section-head"><h2>Selected work</h2><p>Hover or focus a card for details</p></div>
+      <div class="work-grid">
+        <article class="work-card" tabindex="0">
+          <div class="cat">Chat360 · 2025</div><h3>Agentic Omnichannel Memory</h3>
+          <div class="stat">98%<small>cross-channel identity match accuracy</small></div>
+          <div class="hover-layer"><p>A unified memory layer across WhatsApp, web, Instagram, Messenger and voice. Bots keep short- and long-term memory across sessions; LLM-written session summaries are injected into prompts, cutting repeat questions and inference cost.</p><div class="tags"><span class="tag">Python</span><span class="tag">LLMs</span><span class="tag">Identity resolution</span></div></div>
+        </article>
+        <article class="work-card" tabindex="0">
+          <div class="cat">Self project · 2026</div><h3>AI-Powered OPD Claim Adjudication</h3>
+          <div class="stat">RAG<small>grounded claim decisions</small></div>
+          <div class="hover-layer"><p>Insurance rules plus LLM document analysis. Gemini turns prescriptions and invoices into structured claims; Pinecone RAG over policies and past claims grounds decisions; confidence-aware routing with fraud detection and audit logs.</p><div class="tags"><span class="tag">FastAPI</span><span class="tag">React</span><span class="tag">Gemini</span><span class="tag">Pinecone</span></div></div>
+        </article>
+        <article class="work-card" tabindex="0">
+          <div class="cat">IIT Jodhpur · 2024</div><h3>RL-Based Controller Design</h3>
+          <div class="stat">&lt;1%<small>steady-state error, under 5 iterations</small></div>
+          <div class="hover-layer"><p>A TD3 reinforcement-learning controller pretrained on Model Predictive Control, with a Kalman filter for real-time state estimation. Fault-tolerant control of a Quadruple Tank System.</p><div class="tags"><span class="tag">Python</span><span class="tag">RL (TD3)</span><span class="tag">MPC</span></div></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="timeline" id="career">
+    <div class="section-inner">
+      <div class="section-head"><h2>Career</h2><p>Most recent first</p></div>
+      <ol class="tl">
+        <li><div class="when">Aug 2025 – Present</div><div><h3>Backend AI Engineer <span>· Chat360</span></h3><p>Multi-agent orchestration on LangGraph under 5s, multimodal PDF image retrieval, an automotive voice-and-image bot, API observability on Celery, RabbitMQ and ClickHouse, an “Ask-AI” analytics agent, RAG tuning and a Redis semantic cache.</p></div></li>
+        <li><div class="when">Jun – Aug 2025</div><div><h3>Backend AI Engineer Intern <span>· Chat360</span></h3><p>Fixed client-reported issues across production GenAI products; built an agentic ingestion pipeline (JinaAI scraping, chunking, Pinecone embeddings) for grounded answers.</p></div></li>
+        <li><div class="when">Jul 2024</div><div><h3>Amazon ML Summer School <span>· Amazon</span></h3><p>[What you built there: the models, datasets or assignments, and the result.]</p></div></li>
+        <li><div class="when">Jun – Jul 2024</div><div><h3>Data Analyst Intern <span>· Afame Technologies</span></h3><p>Global COVID-19 data analysis and visualisation; a life-expectancy model accurate to about 95%.</p></div></li>
+        <li><div class="when">May 2025</div><div><h3>B.Tech, Chemical Engineering <span>· IIT Jodhpur</span></h3><p>Reinforcement-learning control research; Formula 1 Club website (React, Node.js, MongoDB, WebRTC).</p></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="about" id="about">
+    <div class="section-inner">
+      <p class="about-copy">I work where backends meet language models: systems that remember who they are talking to, pick the right tool, and answer fast enough to feel instant. Competitive programming on the side: CodeChef global rank 43 (Starters 146, Div 3).</p>
+      <div class="marquee-wrap" aria-hidden="true">
+        <div class="marquee-track">
+          <span>Chat360</span><span>IIT Jodhpur</span><span>Amazon ML Summer School</span><span>Afame Technologies</span><span>Air Force School, Pune</span>
+          <span>Chat360</span><span>IIT Jodhpur</span><span>Amazon ML Summer School</span><span>Afame Technologies</span><span>Air Force School, Pune</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="contact" id="contact">
+    <div class="section-inner">
+      <h2>Let's build<br>something.</h2>
+      <div class="contact-links">
+        <a href="mailto:nikhil385713@gmail.com">nikhil385713@gmail.com</a>
+        <a href="#" data-todo="github-url">GitHub</a>
+        <a href="#" data-todo="linkedin-url">LinkedIn</a>
+        <a href="#" data-todo="resume-url">Resume</a>
+      </div>
+      <div class="legal-row"><span>Nikhil Kumar · AI &amp; Backend Engineer</span><span>© 2026</span></div>
+    </div>
+  </footer>
+</main>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var themeBtn = document.getElementById('themeToggle');
+  function syncTheme() { themeBtn.textContent = root.getAttribute('data-theme') === 'dark' ? '☾' : '☀'; }
+  syncTheme();
+  themeBtn.addEventListener('click', function () {
+    var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next); syncTheme();
+    try { localStorage.setItem('portfolio-theme', next); } catch (e) {}
+  });
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  requestAnimationFrame(function () { document.getElementById('stage').classList.add('reveal-ready'); });
+
+  var track = document.getElementById('dragTrack');
+  var isDown = false, startX = 0, startScroll = 0;
+  track.addEventListener('pointerdown', function (e) { isDown = true; track.setPointerCapture(e.pointerId); startX = e.clientX; startScroll = track.scrollLeft; track.classList.add('dragging'); });
+  track.addEventListener('pointermove', function (e) { if (isDown) track.scrollLeft = startScroll - (e.clientX - startX); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (evt) { track.addEventListener(evt, function () { isDown = false; track.classList.remove('dragging'); }); });
+  track.addEventListener('keydown', function (e) { if (e.key === 'ArrowRight') track.scrollLeft += 180; if (e.key === 'ArrowLeft') track.scrollLeft -= 180; });
+
+  /* particle portrait: a head-and-shoulders silhouette made of dots that scatter from the cursor.
+     (A photo-based version was tried; a busy photo background makes the dots unreadable. Use a
+     cut-out portrait on a plain background if you want to switch it on: set USE_PHOTO = true.) */
+  var USE_PHOTO = false;
+  var canvas = document.getElementById('form-canvas');
+  var ctx = canvas.getContext('2d');
+  var panel = canvas.parentElement;
+  var W, H, DPR = Math.min(window.devicePixelRatio || 1, 2);
+  var particles = [];
+  var STEP = 5;
+  var photo = new Image();
+  var photoReady = false;
+  if (USE_PHOTO) { photo.onload = function () { photoReady = true; resizeCanvas(); }; photo.src = 'nikhil-photo.jpg'; }
+
+  function accent() { return getComputedStyle(root).getPropertyValue('--accent').trim(); }
+  function rgba(hex, a) { var h = hex.replace('#', ''); return 'rgba(' + parseInt(h.substr(0, 2), 16) + ',' + parseInt(h.substr(2, 2), 16) + ',' + parseInt(h.substr(4, 2), 16) + ',' + a + ')'; }
+
+  function buildParticles() {
+    var off = document.createElement('canvas'); off.width = W; off.height = H;
+    var o = off.getContext('2d');
+    particles = [];
+    if (photoReady) {
+      // crop head + torso from the photo, fit to the panel, and sample darkness
+      var sx = photo.width * 0.18, sy = photo.height * 0.36, sw = photo.width * 0.64, sh = photo.height * 0.5;
+      var scale = Math.min(W / sw, H / sh), dw = sw * scale, dh = sh * scale;
+      o.drawImage(photo, sx, sy, sw, sh, (W - dw) / 2, H - dh, dw, dh);
+      var d = o.getImageData(0, 0, W, H).data;
+      for (var y = 0; y < H; y += STEP) for (var x = 0; x < W; x += STEP) {
+        var i = (y * W + x) * 4; if (d[i + 3] < 10) continue;
+        var lum = (d[i] * 0.3 + d[i + 1] * 0.59 + d[i + 2] * 0.11) / 255;
+        if (lum < 0.72) particles.push({ hx: x, hy: y, x: x, y: y, vx: 0, vy: 0, shade: lum });
+      }
+    }
+    if (!particles.length) {
+      var cx = W * 0.52, r = Math.min(W, H) * 0.19, cy = H * 0.36;
+      o.fillStyle = '#000'; o.beginPath(); o.arc(cx, cy, r, 0, Math.PI * 2); o.fill();
+      var st = cy + r * 0.8; o.beginPath(); o.moveTo(cx - r * 1.7, H + 40);
+      o.quadraticCurveTo(cx - r * 1.5, st, cx - r * 0.5, st - r * 0.2); o.quadraticCurveTo(cx, st - r * 0.42, cx + r * 0.5, st - r * 0.2);
+      o.quadraticCurveTo(cx + r * 1.5, st, cx + r * 1.7, H + 40); o.closePath(); o.fill();
+      var dd = o.getImageData(0, 0, W, H).data;
+      for (var yy = 0; yy < H; yy += STEP) for (var xx = 0; xx < W; xx += STEP) if (dd[(yy * W + xx) * 4 + 3] > 128) particles.push({ hx: xx, hy: yy, x: xx, y: yy, vx: 0, vy: 0, shade: Math.min(1, Math.hypot(xx - cx, yy - cy) / (r * 2.6)) * 0.6 });
+    }
+  }
+  function resizeCanvas() {
+    var rect = panel.getBoundingClientRect(); W = Math.max(1, Math.floor(rect.width)); H = Math.max(1, Math.floor(rect.height));
+    canvas.width = W * DPR; canvas.height = H * DPR; ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    buildParticles();
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+  var pointer = { x: -9999, y: -9999, active: false };
+  function setPointer(cx, cy) { var r = panel.getBoundingClientRect(); pointer.x = cx - r.left; pointer.y = cy - r.top; pointer.active = true; }
+  panel.addEventListener('mousemove', function (e) { setPointer(e.clientX, e.clientY); });
+  panel.addEventListener('mouseleave', function () { pointer.active = false; });
+  panel.addEventListener('touchmove', function (e) { if (e.touches[0]) setPointer(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+  panel.addEventListener('touchend', function () { pointer.active = false; });
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    var rr = Math.min(W, H) * 0.17, a = accent();
+    for (var i = 0; i < particles.length; i++) {
+      var p = particles[i];
+      if (!reduceMotion) {
+        p.vx += (p.hx - p.x) * 0.055; p.vy += (p.hy - p.y) * 0.055;
+        if (pointer.active) { var dx = p.x - pointer.x, dy = p.y - pointer.y, dist = Math.sqrt(dx * dx + dy * dy) || 0.0001; if (dist < rr) { var f = (1 - dist / rr) * 3.4; p.vx += dx / dist * f; p.vy += dy / dist * f; } }
+        p.vx *= 0.84; p.vy *= 0.84; p.x += p.vx; p.y += p.vy;
+      }
+      var scatter = Math.min(1, Math.hypot(p.x - p.hx, p.y - p.hy) / 46);
+      ctx.fillStyle = rgba(a, Math.max(0.12, 0.95 - p.shade * 0.9 - scatter * 0.35));
+      ctx.fillRect(p.x, p.y, 2.1, 2.1);
+    }
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>

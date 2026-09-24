@@ -1,0 +1,543 @@
+<title>Nikhil's Vending Machine</title>
+<meta name="description" content="A portfolio you buy from: pick a can, pay a coin, collect the project.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Barlow+Condensed:wght@500;600;700;800&family=Share+Tech+Mono&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+:root {
+  color-scheme: dark;
+  --wall: #0c0a10; --wall2: #14111b; --ink: #141018; --cream: #f5efdf; --mute: #8b8593; --soft: #c9c2d4;
+  --yellow: #ffd21f; --amber: #ffb52e; --line: #2a2530;
+  --disp: 'Bungee', Impact, 'Arial Black', sans-serif;
+  --ui: 'Barlow Condensed', 'Arial Narrow', Arial, sans-serif;
+  --mono: 'Share Tech Mono', 'DejaVu Sans Mono', Menlo, monospace;
+}
+html { background: var(--wall); }
+body { margin: 0; background: radial-gradient(ellipse 80% 60% at 62% 30%, #231625 0%, #140f19 45%, var(--wall) 80%) fixed, var(--wall); color: var(--cream); font-family: var(--ui); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+button { font-family: inherit; }
+[hidden] { display: none !important; }
+:focus-visible { outline: 2px solid var(--yellow); outline-offset: 3px; }
+
+.room { display: grid; grid-template-columns: minmax(240px, 330px) minmax(0, 880px); gap: clamp(28px, 4vw, 72px); justify-content: center; padding: 104px 24px 220px; }
+.intro { position: sticky; top: 104px; align-self: start; display: flex; flex-direction: column; gap: 14px; }
+.eyebrow { font: 700 13px/1 var(--ui); letter-spacing: .3em; color: var(--mute); }
+.name { font: 400 clamp(34px, 3.4vw, 46px)/1 var(--disp); margin: 0; color: var(--cream); }
+.role { font: 600 20px/1.25 var(--ui); color: var(--yellow); letter-spacing: .02em; margin: 0; }
+.blurb { font: 500 17px/1.45 var(--ui); color: var(--soft); margin: 0; max-width: 34ch; text-wrap: pretty; }
+.steps { list-style: none; margin: 40px 0 0; padding: 0; display: flex; flex-direction: column; gap: 22px; }
+.steps-h { font: 700 12px/1 var(--ui); letter-spacing: .26em; color: var(--mute); margin-top: 34px; }
+.step { display: flex; gap: 14px; align-items: flex-start; }
+.dot { flex: none; width: 34px; height: 34px; border-radius: 50%; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font: 400 14px/1 var(--disp); background: var(--wall2); color: #6b6575; border: 2px solid #3a3442; transition: all .25s; }
+.step b { display: block; font: 400 14px/1.1 var(--disp); color: #6b6575; transition: color .25s; }
+.step span { display: block; font: 600 15px/1.25 var(--ui); color: #5d5768; margin-top: 3px; transition: color .25s; }
+.step[data-s="on"] .dot { background: var(--yellow); color: var(--ink); border-color: var(--yellow); box-shadow: 0 0 16px rgba(255,210,31,.55); }
+.step[data-s="done"] .dot { background: #2a2530; color: var(--yellow); border-color: var(--yellow); }
+.step:not([data-s="off"]) b { color: var(--cream); }
+.step:not([data-s="off"]) span { color: var(--soft); }
+.hint { font: 600 14px/1.4 var(--ui); color: var(--mute); margin-top: 28px; max-width: 30ch; }
+.hint kbd { font: 700 12px/1 var(--mono); color: var(--cream); background: #221c28; border: 1px solid #3a3442; border-radius: 4px; padding: 2px 5px; }
+
+.mwrap { position: relative; width: 100%; max-width: 880px; }
+.mwrap::before { content: ""; position: absolute; left: -30%; right: -30%; top: -8%; height: 80%; background: radial-gradient(ellipse at 50% 40%, rgba(255,70,20,.28), rgba(255,70,20,.07) 45%, transparent 70%); pointer-events: none; z-index: -1; opacity: 0; transition: opacity 1.2s; }
+.powered .mwrap::before { opacity: 1; }
+.floor { position: absolute; left: -40vw; right: -40vw; bottom: -200px; height: 232px; background: linear-gradient(180deg, #241a28, #0d0a10 70%); border-top: 1px solid rgba(255,140,60,.22); z-index: -2; }
+.floor::before { content: ""; position: absolute; left: 50%; top: 0; width: 1000px; max-width: 110vw; height: 150px; transform: translateX(-50%); background: radial-gradient(ellipse at 50% 0%, rgba(255,170,40,.42), rgba(255,80,20,.12) 45%, transparent 72%); opacity: 0; transition: opacity 1.2s; }
+.powered .floor::before { opacity: 1; }
+#machine { position: relative; width: 100%; aspect-ratio: __AR__; }
+.layer { position: absolute; display: block; overflow: visible; will-change: transform; }
+#lit { will-change: opacity; }
+#interiorDark { will-change: opacity; pointer-events: none; }
+#sweep { position: absolute; top: -10%; left: -80%; width: 55%; height: 120%; background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,.2) 50%, transparent 70%); transform: skewX(-24deg); opacity: 0; will-change: transform; }
+.hits { position: absolute; inset: 0; }
+.hit { position: absolute; background: transparent; border: 0; padding: 0; cursor: pointer; border-radius: 10px; }
+.hit:disabled { cursor: default; }
+.slot[aria-disabled="true"] { cursor: not-allowed; }
+
+/* svg state switches */
+.tag .t-sel, .tag .t-taken { display: none; }
+.tag[data-tag="selected"] .t-idle, .tag[data-tag="taken"] .t-idle { display: none; }
+.tag[data-tag="selected"] .t-sel, .tag[data-tag="taken"] .t-taken { display: inline; }
+.key .k-hover, .key .k-pressed { display: none; }
+.key[data-state="hover"] .k-idle, .key[data-state="pressed"] .k-idle { display: none; }
+.key[data-state="hover"] .k-hover, .key[data-state="pressed"] .k-pressed { display: inline; }
+.can, .tag { transition: opacity .3s; }
+.dimmed { opacity: .3; }
+.tag.dimmed { opacity: .45; }
+
+/* sticky screen + coin mechanism */
+.sticky { position: absolute; left: calc(var(--sx) * 1%); top: 0; width: calc(var(--sw) * 1%); z-index: 3; }
+.sticky-in { position: absolute; left: 0; top: 0; width: 150px; height: 520px; transform-origin: 0 0; }
+.screen { position: absolute; left: 0; top: 0; width: 150px; height: 316px; }
+.cmwrap { position: absolute; left: 0; top: 334px; width: 150px; }
+.cmwrap .cm { display: none; }
+.cmwrap[data-state="idle"] .cm-idle, .cmwrap[data-state="armed"] .cm-armed, .cmwrap[data-state="accepting"] .cm-accepting { display: block; }
+.coin-hit { position: absolute; left: 5px; top: 338px; width: 140px; height: 86px; border: 0; background: transparent; border-radius: 12px; cursor: pointer; padding: 0; }
+.coin-hit:disabled { cursor: default; }
+.cancel-hit { position: absolute; left: 21px; top: 432px; width: 36px; height: 36px; border-radius: 50%; border: 0; background: transparent; cursor: pointer; padding: 0; }
+.scr-content button { cursor: pointer; }
+.scr-content button:hover { filter: brightness(1.12); }
+
+/* HUD */
+.wallet { position: fixed; right: 24px; top: calc(20px + env(safe-area-inset-top, 0px)); z-index: 20; }
+.rail { position: fixed; right: 40px; top: 50%; height: 260px; transform: translateY(-50%); width: 3px; border-radius: 2px; background: rgba(255,255,255,.12); z-index: 20; }
+.rail i { display: block; width: 3px; height: 0; border-radius: 2px; background: var(--yellow); box-shadow: 0 0 10px #ffb300; }
+.rail::before { content: "SCROLL"; position: absolute; left: -22px; top: -26px; font: 700 11px/1 var(--ui); letter-spacing: .2em; color: var(--mute); }
+.sound { position: fixed; left: 24px; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); z-index: 20; height: 42px; padding: 0 16px; border-radius: 21px; background: rgba(10,8,14,.88); border: 1px solid #3a3442; display: flex; align-items: center; gap: 8px; font: 700 13px/1 var(--ui); letter-spacing: .16em; color: var(--mute); cursor: pointer; }
+.sound svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; }
+.toast { position: fixed; left: 50%; bottom: calc(30px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 30; height: 52px; padding: 0 22px 0 26px; border-radius: 26px; background: var(--yellow); color: var(--ink); display: flex; align-items: center; gap: 10px; font: 700 17px/1 var(--ui); letter-spacing: .1em; box-shadow: 0 10px 30px rgba(0,0,0,.55), 0 0 26px rgba(255,210,31,.5); white-space: nowrap; border: 0; cursor: pointer; }
+.toast svg { width: 22px; height: 22px; fill: none; stroke: var(--ink); stroke-width: 3; }
+.flycoin { position: fixed; left: 0; top: 0; width: 26px; height: 26px; z-index: 40; pointer-events: none; opacity: 0; }
+
+/* mobile dock */
+.dock { display: none; }
+
+/* dialogs */
+dialog { border: 0; padding: 0; background: transparent; color: var(--cream); max-width: calc(100vw - 32px); max-height: calc(100vh - 32px); overflow: visible; }
+dialog::backdrop { background: rgba(6,4,9,.74); backdrop-filter: blur(3px); }
+.pd { width: min(1080px, calc(100vw - 32px)); border-radius: 24px; overflow: hidden; background: linear-gradient(135deg, #1d1724, #110d16); box-shadow: 0 40px 120px rgba(0,0,0,.75), 0 0 0 1px rgba(255,255,255,.06); display: grid; grid-template-columns: minmax(0, 400px) minmax(0, 1fr); max-height: calc(100vh - 32px); }
+.pd-can { position: relative; display: flex; align-items: flex-end; justify-content: center; padding: 24px 10px; background: radial-gradient(ellipse at 50% 55%, color-mix(in srgb, var(--c) 45%, transparent), transparent 70%); }
+.pd-can svg { width: 100%; max-width: 330px; height: auto; }
+.pd-slot { position: absolute; left: 26px; top: 26px; font: 400 15px/1 var(--disp); letter-spacing: .06em; color: var(--cl); }
+.pd-body { padding: 40px 44px 36px 16px; display: flex; flex-direction: column; gap: 16px; min-width: 0; overflow: auto; }
+.pd-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.chip { display: inline-block; padding: 6px 14px; border-radius: 14px; background: var(--c); color: var(--ink); font: 700 13px/1 var(--ui); letter-spacing: .14em; }
+.x { width: 44px; height: 44px; border-radius: 50%; background: #2a2530; color: var(--cream); border: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; flex: none; }
+.x svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
+.pd h2 { margin: 0; font: 400 clamp(30px, 3.6vw, 46px)/1.02 var(--disp); text-wrap: balance; }
+.pd p { margin: 0; font: 500 20px/1.4 var(--ui); color: #cfc8d8; max-width: 38ch; }
+.label { background: #f6efdc; color: var(--ink); border-radius: 6px; padding: 14px 18px 10px; max-width: 560px; box-shadow: inset 0 0 0 2px var(--ink); }
+.label h3 { margin: 0; font: 400 22px/1 var(--disp); }
+.label hr { border: 0; height: 7px; background: var(--ink); margin: 8px 0 2px; }
+.label .row { display: flex; justify-content: space-between; gap: 16px; padding: 7px 0; border-top: 1px solid var(--ink); font: 600 16px/1.2 var(--ui); }
+.label .row b { letter-spacing: .08em; }
+.label small { display: block; border-top: 4px solid var(--ink); margin-top: 4px; padding-top: 6px; font: 600 12px/1.4 var(--ui); color: #3a3440; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: auto; padding-top: 8px; }
+.btn { display: inline-flex; align-items: center; height: 50px; padding: 0 24px; border-radius: 25px; font: 700 16px/1 var(--ui); letter-spacing: .12em; text-decoration: none; box-sizing: border-box; cursor: pointer; border: 0; }
+.btn-y { background: var(--yellow); color: var(--ink); box-shadow: 0 0 20px rgba(255,210,31,.35); }
+.btn-o { border: 2px solid var(--cream); color: var(--cream); background: transparent; }
+.btn-t { background: transparent; color: var(--mute); padding: 0 12px; }
+.rc { position: relative; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.rc-paper { transform: rotate(-1.5deg); max-width: calc(100vw - 32px); max-height: calc(100vh - 120px); overflow: auto; }
+.rc .x { position: absolute; right: -58px; top: 0; }
+
+@media (max-width: 860px) {
+  .room { grid-template-columns: minmax(0, 1fr); padding: 20px 16px 150px; gap: 18px; }
+  .intro { position: static; gap: 8px; }
+  .steps, .steps-h, .hint { display: none; }
+  .rail, .sound, .wallet { display: none; }
+  .blurb { font-size: 15px; }
+  .dock { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; flex-direction: column; gap: 8px; padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px)); background: linear-gradient(180deg, rgba(7,29,53,.97), rgba(3,12,26,.99)); border-top: 1px solid rgba(120,190,255,.28); box-shadow: 0 -10px 30px rgba(0,0,0,.55); }
+  .dock-top { display: flex; justify-content: space-between; align-items: center; font: 700 10px/1 var(--ui); letter-spacing: .2em; color: var(--mute); }
+  .dock-coins { display: inline-flex; gap: 3px; margin-left: 6px; vertical-align: middle; }
+  .dock-coins i { width: 9px; height: 9px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff3a3, #ffc21a 50%, #b87a00); }
+  .dock-coins i.spent { background: none; border: 1.5px dashed #6b5a20; box-sizing: border-box; }
+  .dock-main { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 48px; }
+  .dock-t { font: 400 15px/1.1 var(--disp); color: var(--yellow); }
+  .dock-s { font: 600 13px/1.3 var(--ui); color: #8fd0ff; margin-top: 3px; }
+  .dock-btn { height: 46px; padding: 0 18px; border-radius: 23px; border: 0; background: var(--amber); color: var(--ink); font: 700 14px/1 var(--ui); letter-spacing: .1em; box-shadow: 0 0 16px rgba(255,181,46,.5); cursor: pointer; flex: none; }
+  .toast { bottom: 128px; font-size: 14px; height: 44px; }
+  .pd { grid-template-columns: 1fr; }
+  .pd-can { padding: 16px 0 0; max-height: 34vh; }
+  .pd-can svg { max-width: 170px; }
+  .pd-body { padding: 8px 20px 24px; }
+  .rc .x { right: 0; top: -54px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="room" id="room">
+  <aside class="intro" aria-label="About this page">
+    <div class="eyebrow">PORTFOLIO</div>
+    <h1 class="name">NIKHIL</h1>
+    <p class="role">AI &amp; Backend Engineer</p>
+    <p class="blurb">Backend AI Engineer at Chat360, IIT Jodhpur graduate. Every can in this machine is something I built. You have five coins.</p>
+    <div class="steps-h">HOW IT WORKS</div>
+    <ol class="steps" id="steps">
+      <li class="step" data-s="on"><div class="dot">1</div><div><b>PICK</b><span>Tap any can.</span></div></li>
+      <li class="step" data-s="off"><div class="dot">2</div><div><b>PAY</b><span>Insert one coin.</span></div></li>
+      <li class="step" data-s="off"><div class="dot">3</div><div><b>COLLECT</b><span>Scroll to the tray and open it.</span></div></li>
+    </ol>
+    <p class="hint">The keys under the glass print receipts: about me, skills, resume, contact.</p>
+  </aside>
+
+  <main class="mwrap" id="mwrap">
+    <div id="machine" role="img" aria-label="A red neon vending machine stocked with twelve project cans">__LAYERS__</div>
+    <div class="hits" id="hits">__HITS__<div id="trayHits"></div></div>
+    <div class="sticky" id="sticky">
+      <div class="sticky-in" id="stickyIn">
+        <div class="screen" id="screen">__BEZEL__</div>
+        <div class="cmwrap" id="cmwrap" data-state="idle">__CM__</div>
+        <button type="button" class="coin-hit" id="coinHit" aria-label="Insert coin" disabled></button>
+        <button type="button" class="cancel-hit" id="cancelHit" aria-label="Cancel selection"></button>
+      </div>
+    </div>
+    <div class="floor" aria-hidden="true"></div>
+  </main>
+</div>
+
+<div class="wallet" id="wallet" aria-live="polite">__WALLET__</div>
+<div class="rail" aria-hidden="true"><i id="railFill"></i></div>
+<button type="button" class="sound" id="sound" aria-pressed="false"><svg viewBox="0 0 24 24"><polygon points="4 9 8 9 13 5 13 19 8 15 4 15 4 9"/><line x1="17" y1="9" x2="22" y2="15"/><line x1="22" y1="9" x2="17" y2="15"/></svg><span>SOUND OFF</span></button>
+<button type="button" class="toast" id="toast" hidden></button>
+<div class="dock" id="dock" aria-live="polite">
+  <div class="dock-top"><span>COINS<span class="dock-coins" id="dockCoins"></span></span><span id="dockLed" style="width:7px;height:7px;border-radius:50%;background:#3cff8a;box-shadow:0 0 6px #3cff8a;"></span></div>
+  <div class="dock-main"><div id="dockLeft"></div><button type="button" class="dock-btn" id="dockBtn" hidden></button></div>
+</div>
+<svg class="flycoin" id="flycoin" viewBox="-13 -13 26 26" aria-hidden="true"></svg>
+<dialog id="detail" aria-labelledby="pd-title"></dialog>
+<dialog id="receipt" aria-label="Receipt"></dialog>
+
+<script>
+const DATA = __DATA__;
+(function () {
+  const G = DATA.g;
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const RM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const hasG = typeof gsap !== 'undefined';
+  const P = Object.fromEntries(DATA.projects.map((p) => [p.code, p]));
+  const S = { phase: 'off', selected: null, coins: 5, taken: [], filter: 'ALL', busy: false, printing: false };
+
+  const room = $('#room'), wrap = $('#mwrap'), svg = $('#machine');
+  const scr = $('#screen .scr-content');
+  const scrBg = scr.parentElement;
+
+  // ------------------------------------------------ small helpers
+  const tw = (t, v) => hasG ? gsap.to(t, v) : (Object.assign(t.style || {}, {}), v.onComplete && v.onComplete());
+  function setScreen(key) {
+    const html = DATA.screens[key] ?? '';
+    scr.innerHTML = html;
+    scrBg.style.background = key === 'off' ? '#030507' : '';
+    if (hasG && !RM && key !== 'off') gsap.from(scr.children, { y: 8, opacity: 0, duration: .22, stagger: .025, ease: 'power2.out' });
+  }
+  let lcdTimer = null;
+  function lcd(text) {
+    const full = text.padEnd(11, ' ').slice(0, 11);
+    const a = $('#lcdText'), b = $('#lcdGlow');
+    clearInterval(lcdTimer);
+    let i = 0;
+    const put = (n) => { const s = (full.slice(0, n) + ' '.repeat(11 - n)).replace(/ /g, ' '); a.textContent = s; b.textContent = s; };
+    if (RM) return put(11);
+    put(0);
+    lcdTimer = setInterval(() => { i++; put(i); if (i >= 11) clearInterval(lcdTimer); }, 30);
+  }
+  function setWallet() {
+    $('#wallet').innerHTML = DATA.wallets[S.coins];
+    $('#dockCoins').innerHTML = Array.from({ length: 5 }, (_, i) => `<i class="${i < S.coins ? '' : 'spent'}"></i>`).join('');
+  }
+  function setStep(i) {
+    $$('#steps .step').forEach((el, k) => { el.dataset.s = k < i ? 'done' : k === i ? 'on' : 'off'; el.querySelector('.dot').textContent = k < i ? '✓' : String(k + 1); });
+  }
+  function cm(state) { $('#cmwrap').dataset.state = state; $('#coinHit').disabled = state !== 'armed'; }
+  let toastT = null;
+  function toast(text, onClick) {
+    const t = $('#toast');
+    t.innerHTML = `${text}<svg viewBox="0 0 24 24"><line x1="12" y1="4" x2="12" y2="18"/><polyline points="6 12 12 18 18 12"/></svg>`;
+    t.hidden = false; t.onclick = () => { hideToast(); onClick && onClick(); };
+    if (hasG && !RM) gsap.fromTo(t, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: .26, ease: 'power3.out' });
+    clearTimeout(toastT); toastT = setTimeout(hideToast, 5000);
+  }
+  function hideToast() { const t = $('#toast'); if (t.hidden) return; if (hasG && !RM) gsap.to(t, { y: 30, opacity: 0, duration: .2, onComplete: () => { t.hidden = true; } }); else t.hidden = true; }
+  const isMobile = () => window.matchMedia('(max-width: 860px)').matches;
+
+  function dock() {
+    const map = {
+      off: ['WARMING UP', 'One second.'], browse: ['PICK A CAN', 'Tap any can in the machine.'], paying: ['COIN ACCEPTED', 'Dispensing next.'],
+      vending: ['VENDING', 'Watch the coil turn.'], ready: ['COLLECT BELOW', 'Your can is in the tray.'], detail: ['THANK YOU', 'Pick another can.'],
+      noCoins: ['OUT OF COINS', 'Refill to keep going.'], empty: ['SOLD OUT', 'You emptied the machine.'],
+    };
+    const left = $('#dockLeft'), btn = $('#dockBtn');
+    if (S.phase === 'selected') {
+      const p = P[S.selected];
+      left.innerHTML = `<div style="display:flex;align-items:center;gap:10px;"><div style="font:400 28px/1 var(--disp);color:var(--yellow);text-shadow:0 0 10px rgba(255,210,31,.5);">${p.code}</div><div><div style="font:700 14px/1.1 var(--ui);color:var(--cream);">${p.name}</div><div class="dock-s">${p.cat} · 1 COIN</div></div></div>`;
+      btn.hidden = false; btn.textContent = 'PAY 1 COIN'; btn.onclick = pay;
+    } else {
+      const k = S.phase === 'browse' && S.coins === 0 ? 'noCoins' : S.phase === 'browse' && S.taken.length === 12 ? 'empty' : S.phase;
+      const [t, s] = map[k] || map.browse;
+      left.innerHTML = `<div class="dock-t">${t}</div><div class="dock-s">${s}</div>`;
+      if (S.phase === 'ready') { btn.hidden = false; btn.textContent = 'GO TO TRAY'; btn.onclick = toTray; }
+      else if (k === 'noCoins') { btn.hidden = false; btn.textContent = 'REFILL'; btn.onclick = refill; }
+      else btn.hidden = true;
+    }
+    $('#dockLed').style.background = S.phase === 'vending' || S.phase === 'paying' ? 'var(--amber)' : '#3cff8a';
+  }
+
+  function browseScreen() {
+    if (S.taken.length === 12) { setScreen('empty'); lcd('SOLD OUT'); }
+    else if (S.coins === 0) { setScreen('noCoins'); lcd('NO COINS'); }
+    else { setScreen('browse:' + S.filter); lcd('READY'); }
+  }
+  function toBrowse() { S.phase = 'browse'; S.selected = null; cm('idle'); browseScreen(); setStep(0); dock(); }
+
+  // ------------------------------------------------ cans + tags
+  const canEl = (c) => document.getElementById('can-' + c);
+  const tagEl = (c) => document.getElementById('tag-' + c);
+  function lift(c, y, dur = .16) { const el = canEl(c).querySelector('.canInner'); hasG ? gsap.to(el, { y, duration: RM ? 0 : dur, ease: 'power2.out' }) : el.setAttribute('transform', `translate(0 ${y})`); }
+  function halo(c, o) { const el = canEl(c).querySelector('.halo'); hasG ? gsap.to(el, { opacity: o, duration: .25 }) : el.setAttribute('opacity', o); }
+  function deselect() {
+    if (!S.selected) return;
+    const c = S.selected;
+    if (!S.taken.includes(c)) { lift(c, 0); halo(c, 0); tagEl(c).dataset.tag = 'idle'; }
+    S.selected = null;
+  }
+  function select(c) {
+    if (['off', 'paying', 'vending'].includes(S.phase) || S.taken.includes(c)) return;
+    if (S.coins === 0) { browseScreen(); flashScreen(); return; }
+    if (S.selected === c) return;
+    deselect();
+    S.selected = c; S.phase = 'selected';
+    lift(c, -10, .2); halo(c, .55); tagEl(c).dataset.tag = 'selected';
+    setScreen('selected:' + c); lcd('INSERT COIN'); cm('armed'); setStep(1); dock();
+  }
+  function cancel() { if (S.phase !== 'selected') return; deselect(); toBrowse(); }
+  function flashScreen() { if (hasG && !RM) gsap.fromTo(scrBg, { filter: 'brightness(1.8)' }, { filter: 'brightness(1)', duration: .4 }); }
+  function applyFilter(f) {
+    S.filter = f;
+    DATA.projects.forEach((p) => { const dim = f !== 'ALL' && p.cat !== f; canEl(p.code).classList.toggle('dimmed', dim); tagEl(p.code).classList.toggle('dimmed', dim); });
+    if (S.phase === 'browse') setScreen('browse:' + f);
+  }
+
+  // ------------------------------------------------ paying
+  function pay() {
+    if (S.phase !== 'selected' || S.coins < 1) return;
+    S.phase = 'paying'; dock();
+    const from = isMobile() ? $('#dockCoins i:nth-child(' + S.coins + ')') : $$('#wallet svg')[S.coins - 1];
+    S.coins -= 1;
+    const slot = $('#cmwrap').getBoundingClientRect();
+    const tx = slot.left + slot.width * (75 / 150), ty = slot.top + slot.height * (40 / 180);
+    const onScreen = ty > 0 && ty < window.innerHeight;
+    const land = () => { setWallet(); cm('accepting'); setScreen('paying:' + S.selected); lcd('PAYING'); setStep(1); setTimeout(vend, RM ? 150 : 650); };
+    if (!hasG || RM || !from || !onScreen) { land(); return; }
+    const f = from.getBoundingClientRect();
+    const coin = $('#flycoin');
+    coin.innerHTML = $$('#wallet svg')[0] ? $$('#wallet svg')[0].innerHTML : '';
+    setWallet();
+    const sx = f.left + f.width / 2 - 13, sy = f.top + f.height / 2 - 13, ex = tx - 13, ey = ty - 13;
+    const peak = Math.min(sy, ey) - 120;
+    gsap.timeline({ onComplete: () => { gsap.set(coin, { opacity: 0 }); land(); } })
+      .set(coin, { x: sx, y: sy, opacity: 1, scaleX: 1, scale: 1.2 })
+      .to(coin, { x: (sx + ex) / 2, duration: .32, ease: 'none' }, 0)
+      .to(coin, { y: peak, duration: .32, ease: 'power2.out' }, 0)
+      .to(coin, { x: ex, duration: .3, ease: 'none' }, .32)
+      .to(coin, { y: ey, duration: .3, ease: 'power2.in' }, .32)
+      .to(coin, { scaleX: .12, scale: .9, duration: .22, ease: 'power2.in' }, .4)
+      .to(coin, { y: ey + 26, opacity: 0, duration: .14, ease: 'power2.in' });
+  }
+
+  // ------------------------------------------------ vending
+  function vend() {
+    const c = S.selected; if (!c) return;
+    S.phase = 'vending'; setScreen('vending:' + c); lcd('VENDING'); cm('idle'); setStep(2); dock();
+    const el = canEl(c), coil = document.getElementById('coil-' + c);
+    const cx = +el.dataset.cx, base = +el.dataset.base;
+    const drop = G.win.y + G.win.h - base + 260;
+    halo(c, 0);
+    const done = () => {
+      el.style.visibility = 'hidden';
+      S.taken.push(c); tagEl(c).dataset.tag = 'taken';
+      addTrayCan(c);
+    };
+    if (!hasG || RM) { done(); return; }
+    gsap.fromTo('#sweep', { xPercent: 0, opacity: 1 }, { xPercent: 330, duration: 1.1, ease: 'power2.inOut', onComplete: () => gsap.set('#sweep', { opacity: 0 }) });
+    const tl = gsap.timeline({ onComplete: done });
+    tl.to(coil, { rotation: 360, svgOrigin: `${coil.dataset.cx} ${coil.dataset.cy}`, duration: 1.1, ease: 'power1.inOut' }, 0)
+      .to(el, { scale: 1.05, y: 6, svgOrigin: `${cx} ${base}`, duration: 1.1, ease: 'power1.inOut' }, 0)
+      .to(el, { rotation: 26, svgOrigin: `${cx + 52} ${base}`, duration: .22, ease: 'power2.in' })
+      .to(el, { y: drop, rotation: 90, duration: .62, ease: 'power2.in' });
+  }
+
+  // ------------------------------------------------ tray
+  const tray = $('#tray');
+  const trayHits = $('#trayHits');
+  const trayCy = G.bay.y + G.bay.h - 16 - (DATA.canW * DATA.trayS) / 2;
+  function trayX(i, n) { const step = Math.min(118, (G.bay.w - 170) / Math.max(1, n - 1)); const total = step * (n - 1); return G.bay.x + G.bay.w / 2 - total / 2 + i * step; }
+  function addTrayCan(c) {
+    const i = S.taken.length - 1, n = S.taken.length;
+    const jit = ((i * 53) % 7) - 3;
+    tray.insertAdjacentHTML('beforeend', `<g class="tcan" data-code="${c}"><g class="drop"><g transform="rotate(${90 + jit})">${DATA.trayCan[c]}</g></g></g>`);
+    layoutTray(true);
+    const g = tray.lastElementChild;
+    const openFlap = () => {
+      if (hasG && !RM) {
+        gsap.to('#flap', { scaleY: .12, svgOrigin: `${G.bay.x + G.bay.w / 2} ${G.bay.y}`, duration: .38, ease: 'back.out(1.4)' });
+        gsap.to('#trayGlow', { opacity: 1, duration: .5 });
+        gsap.fromTo(svg, { x: 0 }, { x: 2, duration: .04, yoyo: true, repeat: 5, clearProps: 'x' });
+      } else { $('#flap').setAttribute('transform', `translate(0 ${G.bay.y * .88}) scale(1 .12)`); $('#trayGlow').setAttribute('opacity', 1); }
+    };
+    if (hasG && !RM) gsap.from(g.querySelector('.drop'), { y: -170, duration: .55, ease: 'bounce.out', onStart: openFlap });
+    else openFlap();
+    S.phase = 'ready'; S.selected = null;
+    setScreen('ready:' + c); lcd('COLLECT'); setStep(2); dock();
+    const r = $('#flap').getBoundingClientRect();
+    if (r.top > window.innerHeight - 60) toast('YOUR PROJECT DROPPED · SCROLL TO COLLECT', toTray);
+    else toast('TAP THE CAN TO OPEN IT');
+  }
+  function layoutTray(animate) {
+    const kids = [...tray.children];
+    trayHits.innerHTML = '';
+    kids.forEach((k, i) => {
+      const x = trayX(i, kids.length);
+      if (hasG && animate && !RM && i < kids.length - 1) gsap.to(k, { x, y: trayCy, duration: .3, ease: 'power2.out' });
+      else if (hasG) gsap.set(k, { x, y: trayCy }); else k.setAttribute('transform', `translate(${x} ${trayCy})`);
+      const code = k.dataset.code, p = P[code];
+      const w = 150, h = 90;
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'hit'; b.setAttribute('aria-label', `Open ${p.name} from the tray`);
+      b.style.cssText = `left:${(x - w / 2) / G.W * 100}%;top:${(trayCy - h / 2) / G.H * 100}%;width:${w / G.W * 100}%;height:${h / G.H * 100}%;`;
+      b.addEventListener('click', () => openDetail(code, k));
+      b.addEventListener('mouseenter', () => hasG && gsap.to(k.querySelector('.drop'), { x: 4, duration: .2 }));
+      b.addEventListener('mouseleave', () => hasG && gsap.to(k.querySelector('.drop'), { x: 0, duration: .2 }));
+      trayHits.appendChild(b);
+    });
+  }
+  function toTray() {
+    hideToast();
+    const r = $('#flap').getBoundingClientRect();
+    window.scrollTo({ top: window.scrollY + r.top - window.innerHeight * .45, behavior: RM ? 'auto' : 'smooth' });
+  }
+
+  // ------------------------------------------------ project detail
+  const dlg = $('#detail');
+  function openDetail(code, trayG) {
+    const p = P[code], pal = DATA.pal[p.color];
+    S.phase = 'detail'; lcd('THANK YOU'); setStep(3); dock(); hideToast();
+    dlg.innerHTML = `<div class="pd" style="--c:${pal.b};--cl:${pal.l};">
+<div class="pd-can"><div class="pd-slot">SLOT ${p.code}</div>${DATA.modalCan[code]}</div>
+<div class="pd-body">
+<div class="pd-top"><span class="chip">${p.cat}</span><button type="button" class="x" data-close aria-label="Put the can back"><svg viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button></div>
+<h2 id="pd-title">${p.title}</h2>
+<p>${p.summary}</p>
+<div class="label"><h3>WHAT'S INSIDE</h3><hr>
+<div class="row"><b>MY ROLE</b><span>${p.role}</span></div><div class="row"><b>YEAR</b><span>${p.year}</span></div><div class="row"><b>MADE WITH</b><span>${p.stack}</span></div><div class="row"><b>STATUS</b><span>${p.status}</span></div>
+<small>${p.result}</small></div>
+<div class="actions">${p.live ? `<a class="btn btn-y" href="${p.live}" target="_blank" rel="noopener">OPEN LIVE PROJECT</a>` : ''}${p.source ? `<a class="btn btn-o" href="${p.source}" target="_blank" rel="noopener">VIEW SOURCE</a>` : ''}<button type="button" class="btn ${p.live ? 'btn-t' : 'btn-y'}" data-close>PUT IT BACK</button></div>
+</div></div>`;
+    dlg.showModal();
+    if (hasG && !RM) {
+      gsap.from(dlg.querySelector('.pd'), { y: 30, opacity: 0, duration: .35, ease: 'power3.out' });
+      gsap.from(dlg.querySelector('.pd-can svg'), { rotation: 90, scale: .35, y: 160, opacity: 0, duration: .6, ease: 'back.out(1.3)' });
+    }
+    if (trayG && hasG) gsap.to(trayG, { opacity: .25, duration: .2 });
+    dlg._tray = trayG;
+  }
+  dlg.addEventListener('click', (e) => { if (e.target.closest('[data-close]') || e.target === dlg) dlg.close(); });
+  dlg.addEventListener('close', () => { if (dlg._tray && hasG) gsap.to(dlg._tray, { opacity: 1, duration: .3 }); toBrowse(); });
+
+  // ------------------------------------------------ keys + receipts
+  const rdlg = $('#receipt');
+  function print(k) {
+    if (S.printing || S.phase === 'paying' || S.phase === 'vending') return;
+    S.printing = true;
+    const prevLcd = $('#lcdText').textContent;
+    lcd('PRINTING');
+    $('#paperLed').setAttribute('opacity', 1);
+    const kind = k.toLowerCase();
+    const finish = () => {
+      rdlg.innerHTML = `<div class="rc"><div class="rc-paper">${DATA.receipts[kind]}</div><button type="button" class="x" data-close aria-label="Close receipt"><svg viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button></div>`;
+      rdlg.showModal();
+      if (hasG && !RM) gsap.from(rdlg.querySelector('.rc-paper'), { y: 120, rotation: 6, opacity: 0, duration: .5, ease: 'power3.out' });
+      rdlg._key = k; rdlg._prev = prevLcd;
+    };
+    if (hasG && !RM) gsap.to('#paperClipRect', { attr: { height: 120 }, duration: .9, ease: 'steps(12)', onComplete: finish });
+    else finish();
+  }
+  rdlg.addEventListener('click', (e) => { if (e.target.closest('[data-close]') || e.target === rdlg) rdlg.close(); });
+  rdlg.addEventListener('close', () => {
+    S.printing = false;
+    $('#paperLed').setAttribute('opacity', 0);
+    hasG ? gsap.to('#paperClipRect', { attr: { height: 0 }, duration: .3 }) : $('#paperClipRect').setAttribute('height', 0);
+    const map = { browse: null, selected: 'INSERT COIN', ready: 'COLLECT', detail: 'THANK YOU' };
+    if (S.phase === 'browse') browseScreen(); else lcd(map[S.phase] || 'READY');
+    const b = document.querySelector(`.key-hit[data-key="${rdlg._key}"]`); b && b.focus();
+  });
+  $$('.key-hit').forEach((b) => {
+    const k = document.getElementById('key-' + b.dataset.key);
+    b.addEventListener('mouseenter', () => { k.dataset.state = 'hover'; });
+    b.addEventListener('mouseleave', () => { k.dataset.state = 'idle'; });
+    b.addEventListener('pointerdown', () => { k.dataset.state = 'pressed'; });
+    b.addEventListener('pointerup', () => { k.dataset.state = 'hover'; });
+    b.addEventListener('focus', () => { k.dataset.state = 'hover'; });
+    b.addEventListener('blur', () => { k.dataset.state = 'idle'; });
+    b.addEventListener('click', () => { k.dataset.state = 'pressed'; setTimeout(() => { k.dataset.state = 'idle'; }, 180); print(b.dataset.key); });
+  });
+
+  // ------------------------------------------------ refill + restock
+  function refill() { S.coins = 5; setWallet(); if (hasG && !RM) gsap.from('#wallet svg', { scale: 0, stagger: .06, duration: .3, ease: 'back.out(3)' }); toBrowse(); }
+  function restock() {
+    S.taken = []; tray.innerHTML = ''; trayHits.innerHTML = '';
+    DATA.projects.forEach((p) => { const el = canEl(p.code); el.style.visibility = ''; hasG ? gsap.set(el, { clearProps: 'all' }) : el.removeAttribute('transform'); el.removeAttribute('transform'); tagEl(p.code).dataset.tag = 'idle'; lift(p.code, 0, 0); });
+    DATA.projects.forEach((p, i) => hasG && !RM && gsap.from(canEl(p.code), { y: -40, opacity: 0, duration: .4, delay: i * .04, ease: 'power2.out' }));
+    hasG ? gsap.to('#flap', { scaleY: 1, duration: .3 }) : $('#flap').removeAttribute('transform');
+    hasG ? gsap.to('#trayGlow', { opacity: 0, duration: .3 }) : $('#trayGlow').setAttribute('opacity', 0);
+    S.coins = 5; setWallet(); toBrowse();
+  }
+
+  // ------------------------------------------------ wiring
+  $$('.slot').forEach((b) => {
+    const c = b.dataset.code;
+    b.addEventListener('click', () => select(c));
+    b.addEventListener('mouseenter', () => { if (S.selected !== c && !S.taken.includes(c) && S.phase !== 'off') lift(c, -6); });
+    b.addEventListener('mouseleave', () => { if (S.selected !== c && !S.taken.includes(c)) lift(c, 0); });
+  });
+  $('#coinHit').addEventListener('click', pay);
+  $('#cancelHit').addEventListener('click', cancel);
+  scr.addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b) return;
+    const t = b.textContent.trim().toUpperCase();
+    if (/^(ALL|WORK|PROJECTS|RESEARCH)/.test(t)) applyFilter(t.match(/^(ALL|WORK|PROJECTS|RESEARCH)/)[1]);
+    else if (t.startsWith('INSERT COIN')) pay();
+    else if (t.startsWith('SCROLL TO TRAY')) toTray();
+    else if (t.startsWith('REFILL')) refill();
+    else if (t.startsWith('SAY HELLO')) print('CONTACT');
+    else if (t.startsWith('RESTOCK')) restock();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.target.closest('input, textarea') || document.querySelector('dialog[open]')) return;
+    if (e.key === 'Escape') cancel();
+  });
+  $('#sound').addEventListener('click', (e) => { const b = e.currentTarget; const on = b.getAttribute('aria-pressed') !== 'true'; b.setAttribute('aria-pressed', on); b.querySelector('span').textContent = on ? 'SOUND ON (SOON)' : 'SOUND OFF'; });
+
+  // sticky screen + scroll rail
+  const sticky = $('#sticky'), stickyIn = $('#stickyIn');
+  sticky.style.setProperty('--sx', (G.screen.x / G.W * 100).toFixed(3));
+  sticky.style.setProperty('--sw', (150 / G.W * 100).toFixed(3));
+  const park = G.deckY - 60 - 508;
+  function onScroll() {
+    const k = wrap.clientWidth / G.W;
+    stickyIn.style.transform = `scale(${k})`;
+    let y = G.screen.y;
+    if (!isMobile()) {
+      const top = wrap.getBoundingClientRect().top;
+      const want = (110 - top) / k;
+      y = Math.max(G.screen.y, Math.min(park, want));
+    }
+    sticky.style.top = (y * k) + 'px';
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    $('#railFill').style.height = (max > 0 ? Math.max(6, window.scrollY / max * 100) : 0) + '%';
+    if (!$('#toast').hidden && $('#flap').getBoundingClientRect().top < window.innerHeight - 120 && S.phase === 'ready') { hideToast(); toast('TAP THE CAN TO OPEN IT'); }
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  onScroll();
+
+  // ------------------------------------------------ power on
+  setWallet(); setScreen('off'); dock();
+  function poweredOn() { document.body.classList.add('powered'); S.phase = 'browse'; browseScreen(); dock(); }
+  if (!hasG || RM) {
+    $('#lit').style.opacity = 1; $('#interiorDark').style.opacity = 0; poweredOn();
+  } else {
+    gsap.timeline({ delay: .35 })
+      .set('#lit', { opacity: 0 })
+      .to('#lit', { opacity: .75, duration: .05 })
+      .to('#lit', { opacity: .08, duration: .05 })
+      .to('#lit', { opacity: .9, duration: .05 }, '+=.12')
+      .to('#lit', { opacity: .3, duration: .04 })
+      .to('#lit', { opacity: 1, duration: .4, ease: 'power2.out' }, '+=.08')
+      .to('#interiorDark', { opacity: .3, duration: .05 }, '+=.1')
+      .to('#interiorDark', { opacity: .55, duration: .06 })
+      .to('#interiorDark', { opacity: 0, duration: .3 }, '+=.08')
+      .add(poweredOn, '-=.1');
+  }
+})();
+</script>
