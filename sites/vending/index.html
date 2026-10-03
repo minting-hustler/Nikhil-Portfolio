@@ -24,8 +24,8 @@ button { font-family: inherit; }
 [hidden] { display: none !important; }
 :focus-visible { outline: 2px solid var(--yellow); outline-offset: 3px; }
 
-.room { display: grid; grid-template-columns: minmax(240px, 330px) minmax(0, 880px); gap: clamp(28px, 4vw, 72px); justify-content: center; padding: 104px 24px 220px; }
-.intro { position: sticky; top: 104px; align-self: start; display: flex; flex-direction: column; gap: 14px; }
+.room { display: grid; grid-template-columns: minmax(240px, 330px) minmax(0, 880px); gap: clamp(28px, 4vw, 72px); justify-content: center; padding: calc(104px + var(--shell-top, 0px)) 24px 220px; }
+.intro { position: sticky; top: calc(104px + var(--shell-top, 0px)); align-self: start; display: flex; flex-direction: column; gap: 14px; }
 .eyebrow { font: 700 13px/1 var(--ui); letter-spacing: .3em; color: var(--mute); }
 .name { font: 400 clamp(34px, 3.4vw, 46px)/1 var(--disp); margin: 0; color: var(--cream); }
 .role { font: 600 20px/1.25 var(--ui); color: var(--yellow); letter-spacing: .02em; margin: 0; }
@@ -84,7 +84,8 @@ button { font-family: inherit; }
 .scr-content button:hover { filter: brightness(1.12); }
 
 /* HUD */
-.wallet { position: fixed; right: 24px; top: calc(20px + env(safe-area-inset-top, 0px)); z-index: 20; }
+/* --shell-top: height of the portfolio switch bar floating above this page (0 when opened on its own) */
+.wallet { position: fixed; right: 24px; top: calc(20px + var(--shell-top, 0px) + env(safe-area-inset-top, 0px)); z-index: 20; }
 .rail { position: fixed; right: 40px; top: 50%; height: 260px; transform: translateY(-50%); width: 3px; border-radius: 2px; background: rgba(255,255,255,.12); z-index: 20; }
 .rail i { display: block; width: 3px; height: 0; border-radius: 2px; background: var(--yellow); box-shadow: 0 0 10px #ffb300; }
 .rail::before { content: "SCROLL"; position: absolute; left: -22px; top: -26px; font: 700 11px/1 var(--ui); letter-spacing: .2em; color: var(--mute); }
@@ -98,9 +99,10 @@ button { font-family: inherit; }
 .dock { display: none; }
 
 /* dialogs */
-dialog { border: 0; padding: 0; background: transparent; color: var(--cream); max-width: calc(100vw - 32px); max-height: calc(100vh - 32px); overflow: visible; }
+dialog { border: 0; padding: 0; background: transparent; color: var(--cream); max-width: calc(100vw - 32px); max-height: calc(100vh - 32px - var(--shell-top, 0px)); overflow: visible; }
+dialog[open] { top: var(--shell-top, 0px); }
 dialog::backdrop { background: rgba(6,4,9,.74); backdrop-filter: blur(3px); }
-.pd { width: min(1080px, calc(100vw - 32px)); border-radius: 24px; overflow: hidden; background: linear-gradient(135deg, #1d1724, #110d16); box-shadow: 0 40px 120px rgba(0,0,0,.75), 0 0 0 1px rgba(255,255,255,.06); display: grid; grid-template-columns: minmax(0, 400px) minmax(0, 1fr); max-height: calc(100vh - 32px); }
+.pd { width: min(1080px, calc(100vw - 32px)); border-radius: 24px; overflow: hidden; background: linear-gradient(135deg, #1d1724, #110d16); box-shadow: 0 40px 120px rgba(0,0,0,.75), 0 0 0 1px rgba(255,255,255,.06); display: grid; grid-template-columns: minmax(0, 400px) minmax(0, 1fr); max-height: calc(100vh - 32px - var(--shell-top, 0px)); }
 .pd-can { position: relative; display: flex; align-items: flex-end; justify-content: center; padding: 24px 10px; background: radial-gradient(ellipse at 50% 55%, color-mix(in srgb, var(--c) 45%, transparent), transparent 70%); }
 .pd-can svg { width: 100%; max-width: 330px; height: auto; }
 .pd-slot { position: absolute; left: 26px; top: 26px; font: 400 15px/1 var(--disp); letter-spacing: .06em; color: var(--cl); }
@@ -123,11 +125,11 @@ dialog::backdrop { background: rgba(6,4,9,.74); backdrop-filter: blur(3px); }
 .btn-o { border: 2px solid var(--cream); color: var(--cream); background: transparent; }
 .btn-t { background: transparent; color: var(--mute); padding: 0 12px; }
 .rc { position: relative; display: flex; flex-direction: column; align-items: center; gap: 14px; }
-.rc-paper { transform: rotate(-1.5deg); max-width: calc(100vw - 32px); max-height: calc(100vh - 120px); overflow: auto; }
+.rc-paper { transform: rotate(-1.5deg); max-width: calc(100vw - 32px); max-height: calc(100vh - 120px - var(--shell-top, 0px)); overflow: auto; }
 .rc .x { position: absolute; right: -58px; top: 0; }
 
 @media (max-width: 860px) {
-  .room { grid-template-columns: minmax(0, 1fr); padding: 20px 16px 150px; gap: 18px; }
+  .room { grid-template-columns: minmax(0, 1fr); padding: calc(20px + var(--shell-top, 0px)) 16px 150px; gap: 18px; }
   .intro { position: static; gap: 8px; }
   .steps, .steps-h, .hint { display: none; }
   .rail, .sound, .wallet { display: none; }

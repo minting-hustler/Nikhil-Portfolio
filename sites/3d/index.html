@@ -26,7 +26,9 @@
     --line: rgba(245,244,240,0.14); --accent: #FF3B3B; color-scheme: dark;
   }
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; scroll-padding-top: var(--shell-top, 0px); }
+  /* --shell-top: height of the portfolio switch bar floating above this page (0 when opened on its own) */
+  body { padding-top: var(--shell-top, 0px); }
   html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); overflow-x: hidden; }
   body { transition: background-color 0.4s ease, color 0.4s ease; }
   .section-inner { max-width: 1180px; margin: 0 auto; padding: 0 clamp(20px, 4vw, 44px); }

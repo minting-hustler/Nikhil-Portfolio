@@ -13,7 +13,9 @@ a:hover{color:#a8281c}
 .dropcap::first-letter{font-family:'Old Standard TT',Georgia,serif;font-weight:700;float:left;font-size:64px;line-height:.82;padding:6px 8px 0 0}
 </style>
 <style>
-html{background:#f1ece1}
+html{background:#f1ece1;scroll-padding-top:var(--shell-top,0px)}
+/* --shell-top: height of the portfolio switch bar floating above this page (0 when opened on its own) */
+body{padding-top:var(--shell-top,0px)}
 #fit{width:1440px;transform-origin:0 0;margin:0 auto}
 @media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
 </style>
