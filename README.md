@@ -1,7 +1,5 @@
 # Nikhil Kumar — Portfolio
 
-New Age portfolio
-
 AI & Backend Engineer. One site, three ways to read it: **3D**, **Newspaper**, **Vending machine**.
 
 Open `index.html`, or run locally:
@@ -27,4 +25,3 @@ Edit the vending machine in `source/vending/`, then `npm run build:vending`.
 ## Deploy
 
 Pushed to GitHub and served by GitHub Pages from `main` (root). Every push to `main` updates the live site.
-

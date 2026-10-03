@@ -26,10 +26,8 @@
     --line: rgba(245,244,240,0.14); --accent: #FF3B3B; color-scheme: dark;
   }
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; scroll-padding-top: var(--shell-top, 0px); }
-  /* --shell-top: height of the portfolio switch bar floating above this page (0 when opened on its own) */
-  body { padding-top: var(--shell-top, 0px); }
-  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); overflow-x: hidden; }
+  html { scroll-behavior: smooth; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); overflow-x: clip; }
   body { transition: background-color 0.4s ease, color 0.4s ease; }
   .section-inner { max-width: 1180px; margin: 0 auto; padding: 0 clamp(20px, 4vw, 44px); }
   .tags { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -130,30 +128,82 @@
     .scroll-cue .stem::after { animation: none; }
     html { scroll-behavior: auto; }
   }
+
+  /* ---------- first page: Nikhil in stars + the black hole (always dark, it's space) ---------- */
+  .space { position: relative; height: 210vh; background: radial-gradient(ellipse 60% 50% at 70% 18%, #1a0d10 0%, transparent 70%), radial-gradient(ellipse 50% 60% at 15% 90%, #0b0d1e 0%, transparent 70%), #040309;
+    --text: #F5F4F0; --text-soft: rgba(245,244,240,0.6); --line: rgba(245,244,240,0.16); --bg-raised: #14121a; --accent: #FF3B3B; color: var(--text); }
+  .space-pin { position: sticky; top: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; padding: clamp(20px, 4vw, 44px); touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+  #bh { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .space .topbar, .space .hero-copy, .space .foot-row { position: relative; z-index: 3; }
+  .space .hero-copy { max-width: 620px; margin-top: auto; margin-bottom: auto; transform: translateY(calc(var(--feed, 0) * -40px)); opacity: calc(1 - var(--feed, 0) * 0.5); pointer-events: none; }
+  .space .hero-copy a { pointer-events: auto; }
+  .space h1 { margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: clamp(3.4rem, 9vw, 8.4rem); line-height: 0.86; letter-spacing: -0.03em; text-transform: uppercase; }
+  .space h1 span { display: block; }
+  .space h1 span:last-child { -webkit-text-stroke: 1.5px var(--text); color: transparent; }
+  .space .role { margin: 24px 0 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: clamp(1.1rem, 2vw, 1.5rem); color: var(--accent); }
+  .space .subtitle { max-width: 40ch; margin: 12px 0 0; font-size: clamp(1rem, 1.5vw, 1.12rem); line-height: 1.5; color: var(--text-soft); }
+  .space .reveal { opacity: 0; }
+  .bh-hud { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--text-soft); }
+  .bh-hud b { color: #ffb070; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .bh-hint { display: inline-flex; align-items: center; gap: 8px; }
+  .bh-hint i { width: 7px; height: 7px; border-radius: 50%; background: #ff9a4a; box-shadow: 0 0 10px #ff9a4a; }
+  .space .foot-row { opacity: 1; animation: none; }
+  .space .theme-toggle { background: rgba(255,255,255,.06); }
+  @media (max-width: 760px) {
+    .space-pin { justify-content: space-between; }
+    .space .hero-copy { margin: auto 0 0; padding: 120px 0 8px; background: linear-gradient(to top, rgba(4,3,9,.92) 40%, rgba(4,3,9,0)); margin-left: -20px; margin-right: -20px; padding-left: 20px; padding-right: 20px; }
+    .space h1 { font-size: clamp(2.6rem, 14vw, 4rem); }
+    .space .subtitle { display: none; }
+    .space .role { margin-top: 12px; }
+    .space .foot-row { flex-direction: row; align-items: flex-end; }
+    .space .scroll-cue { display: none; }
+  }
+  .more { display: inline-flex; gap: 6px; align-items: center; margin-top: 16px; font-size: 13px; font-weight: 600; color: inherit; text-decoration: none; border-bottom: 1px solid currentColor; padding-bottom: 2px; align-self: flex-start; }
+  .more:hover { color: var(--accent); }
+  .index { padding: 10px 0 90px; }
+  .index-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); counter-reset: n; }
+  .index-list a { display: grid; grid-template-columns: 56px minmax(0,1fr) auto 28px; gap: 18px; align-items: baseline; padding: 18px 4px; border-bottom: 1px solid var(--line); color: var(--text); text-decoration: none; transition: padding .3s ease, background .3s ease; }
+  .index-list a:hover, .index-list a:focus-visible { padding-left: 16px; background: var(--bg-raised); }
+  .index-list .code { font-size: 12px; color: var(--text-soft); font-variant-numeric: tabular-nums; }
+  .index-list .t { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: clamp(1.05rem, 2vw, 1.4rem); }
+  .index-list .m { font-size: 12px; color: var(--text-soft); white-space: nowrap; }
+  .index-list .ar { color: var(--accent); transition: transform .3s ease; }
+  .index-list a:hover .ar { transform: translateX(4px); }
+  @media (max-width: 640px) { .index-list a { grid-template-columns: 40px minmax(0,1fr) 20px; } .index-list .m { display: none; } }
+  .about-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 72px); }
+  .about-head { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: clamp(2rem, 4.6vw, 3.6rem); line-height: 1; letter-spacing: -0.02em; margin: 0 0 28px; }
+  .about-body p { font-size: clamp(1.02rem, 1.5vw, 1.15rem); line-height: 1.65; margin: 0 0 18px; max-width: 60ch; }
+  .about-body p:first-child::first-letter { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; float: left; font-size: 3.6em; line-height: .82; margin: 6px 10px 0 0; color: var(--accent); }
+  .facts { margin: 0; border-top: 1px solid var(--text); }
+  .facts div { display: grid; grid-template-columns: 96px minmax(0,1fr); gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+  .facts dt { color: var(--text-soft); } .facts dd { margin: 0; }
+  .looking { margin-top: 26px; padding: 18px 20px; background: var(--bg-raised); border-left: 3px solid var(--accent); font-size: 15px; line-height: 1.5; }
+  .looking b { display: block; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--text-soft); margin-bottom: 6px; font-weight: 600; }
+  @media (max-width: 820px) { .about-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
-<div class="stage" id="stage">
-  <div class="topbar">
-    <nav class="nav-links" aria-label="Sections"><a href="#stack">Stack</a><a href="#work">Work</a><a href="#career">Career</a><a href="#contact">Contact</a></nav>
-    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">☀</button>
-  </div>
-  <div class="hero">
+<section class="space" id="space" aria-label="Introduction">
+  <div class="space-pin">
+    <canvas id="bh" aria-hidden="true"></canvas>
+    <div class="topbar reveal">
+      <nav class="nav-links" aria-label="Sections"><a href="#about">About</a><a href="#work">Work</a><a href="#career">Career</a><a href="#contact">Contact</a></nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">☀</button>
+    </div>
     <div class="hero-copy">
-      <h1 aria-label="Nikhil Kumar"><span class="line"><span>Nikhil</span></span><span class="line"><span>Kumar</span></span></h1>
-      <p class="role">AI &amp; Backend Engineer</p>
-      <p class="subtitle">I build Python backends and the LLM systems that run on them: RAG pipelines, multi-agent orchestration and APIs on AWS. Backend AI Engineer at Chat360; B.Tech, IIT Jodhpur.</p>
+      <h1 aria-label="Nikhil Kumar"><span class="reveal">Nikhil</span><span class="reveal">Kumar</span></h1>
+      <p class="role reveal">AI &amp; Backend Engineer</p>
+      <p class="subtitle reveal">I build Python backends and the LLM systems that run on them: RAG pipelines, multi-agent orchestration and APIs on AWS. Backend AI Engineer at Chat360; B.Tech, IIT Jodhpur.</p>
     </div>
-    <div class="form-panel">
-      <canvas id="form-canvas" aria-hidden="true"></canvas>
-      <p class="form-caption">Move your cursor across it.</p>
+    <div class="foot-row reveal">
+      <div class="bh-hud">
+        <span class="bh-hint"><i></i><span class="hint-desk">Scroll to feed the black hole. Hold to pull harder.</span></span>
+        <span>Stars consumed: <b id="bhCount">0</b></span>
+      </div>
+      <div class="scroll-cue"><span>Scroll</span><span class="stem"></span></div>
     </div>
   </div>
-  <div class="foot-row">
-    <div class="status-mark"><span class="status-dot"></span>Currently at Chat360, building agentic systems</div>
-    <div class="scroll-cue"><span>Scroll</span><span class="stem"></span></div>
-  </div>
-</div>
+</section>
 
 <main>
   <section class="explore" id="stack">
@@ -185,19 +235,26 @@
         <article class="work-card" tabindex="0">
           <div class="cat">Chat360 · 2025</div><h3>Agentic Omnichannel Memory</h3>
           <div class="stat">98%<small>cross-channel identity match accuracy</small></div>
-          <div class="hover-layer"><p>A unified memory layer across WhatsApp, web, Instagram, Messenger and voice. Bots keep short- and long-term memory across sessions; LLM-written session summaries are injected into prompts, cutting repeat questions and inference cost.</p><div class="tags"><span class="tag">Python</span><span class="tag">LLMs</span><span class="tag">Identity resolution</span></div></div>
+          <div class="hover-layer"><p>A unified memory layer across WhatsApp, web, Instagram, Messenger and voice. Bots keep short- and long-term memory across sessions; LLM-written session summaries are injected into prompts, cutting repeat questions and inference cost.</p><div class="tags"><span class="tag">Python</span><span class="tag">LLMs</span><span class="tag">Identity resolution</span></div><a class="more" href="project.html?id=memory">Read the full story <span aria-hidden="true">&rarr;</span></a></div>
         </article>
         <article class="work-card" tabindex="0">
           <div class="cat">Self project · 2026</div><h3>AI-Powered OPD Claim Adjudication</h3>
           <div class="stat">RAG<small>grounded claim decisions</small></div>
-          <div class="hover-layer"><p>Insurance rules plus LLM document analysis. Gemini turns prescriptions and invoices into structured claims; Pinecone RAG over policies and past claims grounds decisions; confidence-aware routing with fraud detection and audit logs.</p><div class="tags"><span class="tag">FastAPI</span><span class="tag">React</span><span class="tag">Gemini</span><span class="tag">Pinecone</span></div></div>
+          <div class="hover-layer"><p>Insurance rules plus LLM document analysis. Gemini turns prescriptions and invoices into structured claims; Pinecone RAG over policies and past claims grounds decisions; confidence-aware routing with fraud detection and audit logs.</p><div class="tags"><span class="tag">FastAPI</span><span class="tag">React</span><span class="tag">Gemini</span><span class="tag">Pinecone</span></div><a class="more" href="project.html?id=opd-claims">Read the full story <span aria-hidden="true">&rarr;</span></a></div>
         </article>
         <article class="work-card" tabindex="0">
           <div class="cat">IIT Jodhpur · 2024</div><h3>RL-Based Controller Design</h3>
           <div class="stat">&lt;1%<small>steady-state error, under 5 iterations</small></div>
-          <div class="hover-layer"><p>A TD3 reinforcement-learning controller pretrained on Model Predictive Control, with a Kalman filter for real-time state estimation. Fault-tolerant control of a Quadruple Tank System.</p><div class="tags"><span class="tag">Python</span><span class="tag">RL (TD3)</span><span class="tag">MPC</span></div></div>
+          <div class="hover-layer"><p>A TD3 reinforcement-learning controller pretrained on Model Predictive Control, with a Kalman filter for real-time state estimation. Fault-tolerant control of a Quadruple Tank System.</p><div class="tags"><span class="tag">Python</span><span class="tag">RL (TD3)</span><span class="tag">MPC</span></div><a class="more" href="project.html?id=rl-control">Read the full story <span aria-hidden="true">&rarr;</span></a></div>
         </article>
       </div>
+    </div>
+  </section>
+
+  <section class="index" id="projects">
+    <div class="section-inner">
+      <div class="section-head"><h2>All twelve</h2><p>Every project, each with its own page</p></div>
+      <ol class="index-list" id="indexList"></ol>
     </div>
   </section>
 
@@ -216,7 +273,17 @@
 
   <section class="about" id="about">
     <div class="section-inner">
-      <p class="about-copy">I work where backends meet language models: systems that remember who they are talking to, pick the right tool, and answer fast enough to feel instant. Competitive programming on the side: CodeChef global rank 43 (Starters 146, Div 3).</p>
+      <div class="section-head"><h2>About me</h2><p>The part that isn't on the resume</p></div>
+      <div class="about-grid">
+        <div>
+          <p class="about-head" id="aboutHead"></p>
+          <div class="about-body" id="aboutBody"></div>
+        </div>
+        <div>
+          <dl class="facts" id="aboutFacts"></dl>
+          <div class="looking"><b>Looking for</b><span id="aboutLooking"></span></div>
+        </div>
+      </div>
       <div class="marquee-wrap" aria-hidden="true">
         <div class="marquee-track">
           <span>Chat360</span><span>IIT Jodhpur</span><span>Amazon ML Summer School</span><span>Afame Technologies</span><span>Air Force School, Pune</span>
@@ -240,6 +307,7 @@
   </footer>
 </main>
 
+<script src="../shared/content.js"></script>
 <script>
 (function () {
   var root = document.documentElement;
@@ -251,9 +319,6 @@
     root.setAttribute('data-theme', next); syncTheme();
     try { localStorage.setItem('portfolio-theme', next); } catch (e) {}
   });
-  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  requestAnimationFrame(function () { document.getElementById('stage').classList.add('reveal-ready'); });
-
   var track = document.getElementById('dragTrack');
   var isDown = false, startX = 0, startScroll = 0;
   track.addEventListener('pointerdown', function (e) { isDown = true; track.setPointerCapture(e.pointerId); startX = e.clientX; startScroll = track.scrollLeft; track.classList.add('dragging'); });
@@ -261,80 +326,23 @@
   ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (evt) { track.addEventListener(evt, function () { isDown = false; track.classList.remove('dragging'); }); });
   track.addEventListener('keydown', function (e) { if (e.key === 'ArrowRight') track.scrollLeft += 180; if (e.key === 'ArrowLeft') track.scrollLeft -= 180; });
 
-  /* particle portrait: a head-and-shoulders silhouette made of dots that scatter from the cursor.
-     (A photo-based version was tried; a busy photo background makes the dots unreadable. Use a
-     cut-out portrait on a plain background if you want to switch it on: set USE_PHOTO = true.) */
-  var USE_PHOTO = false;
-  var canvas = document.getElementById('form-canvas');
-  var ctx = canvas.getContext('2d');
-  var panel = canvas.parentElement;
-  var W, H, DPR = Math.min(window.devicePixelRatio || 1, 2);
-  var particles = [];
-  var STEP = 5;
-  var photo = new Image();
-  var photoReady = false;
-  if (USE_PHOTO) { photo.onload = function () { photoReady = true; resizeCanvas(); }; photo.src = 'nikhil-photo.jpg'; }
-
-  function accent() { return getComputedStyle(root).getPropertyValue('--accent').trim(); }
-  function rgba(hex, a) { var h = hex.replace('#', ''); return 'rgba(' + parseInt(h.substr(0, 2), 16) + ',' + parseInt(h.substr(2, 2), 16) + ',' + parseInt(h.substr(4, 2), 16) + ',' + a + ')'; }
-
-  function buildParticles() {
-    var off = document.createElement('canvas'); off.width = W; off.height = H;
-    var o = off.getContext('2d');
-    particles = [];
-    if (photoReady) {
-      // crop head + torso from the photo, fit to the panel, and sample darkness
-      var sx = photo.width * 0.18, sy = photo.height * 0.36, sw = photo.width * 0.64, sh = photo.height * 0.5;
-      var scale = Math.min(W / sw, H / sh), dw = sw * scale, dh = sh * scale;
-      o.drawImage(photo, sx, sy, sw, sh, (W - dw) / 2, H - dh, dw, dh);
-      var d = o.getImageData(0, 0, W, H).data;
-      for (var y = 0; y < H; y += STEP) for (var x = 0; x < W; x += STEP) {
-        var i = (y * W + x) * 4; if (d[i + 3] < 10) continue;
-        var lum = (d[i] * 0.3 + d[i + 1] * 0.59 + d[i + 2] * 0.11) / 255;
-        if (lum < 0.72) particles.push({ hx: x, hy: y, x: x, y: y, vx: 0, vy: 0, shade: lum });
-      }
-    }
-    if (!particles.length) {
-      var cx = W * 0.52, r = Math.min(W, H) * 0.19, cy = H * 0.36;
-      o.fillStyle = '#000'; o.beginPath(); o.arc(cx, cy, r, 0, Math.PI * 2); o.fill();
-      var st = cy + r * 0.8; o.beginPath(); o.moveTo(cx - r * 1.7, H + 40);
-      o.quadraticCurveTo(cx - r * 1.5, st, cx - r * 0.5, st - r * 0.2); o.quadraticCurveTo(cx, st - r * 0.42, cx + r * 0.5, st - r * 0.2);
-      o.quadraticCurveTo(cx + r * 1.5, st, cx + r * 1.7, H + 40); o.closePath(); o.fill();
-      var dd = o.getImageData(0, 0, W, H).data;
-      for (var yy = 0; yy < H; yy += STEP) for (var xx = 0; xx < W; xx += STEP) if (dd[(yy * W + xx) * 4 + 3] > 128) particles.push({ hx: xx, hy: yy, x: xx, y: yy, vx: 0, vy: 0, shade: Math.min(1, Math.hypot(xx - cx, yy - cy) / (r * 2.6)) * 0.6 });
-    }
+  /* content shared with the other designs */
+  var P = window.PORTFOLIO;
+  if (P) {
+    var esc = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
+    document.getElementById('indexList').innerHTML = P.projects.map(function (p) {
+      return '<li><a href="project.html?id=' + p.id + '"><span class="code">' + p.code + '</span><span class="t">' + esc(p.title) + '</span><span class="m">' + esc(p.org) + ' · ' + esc(p.period) + '</span><span class="ar" aria-hidden="true">&rarr;</span></a></li>';
+    }).join('');
+    document.getElementById('aboutHead').textContent = P.about.headline;
+    document.getElementById('aboutBody').innerHTML = P.about.paras.map(function (t) { return '<p>' + esc(t) + '</p>'; }).join('');
+    document.getElementById('aboutFacts').innerHTML = P.about.facts.map(function (f) { return '<div><dt>' + esc(f[0]) + '</dt><dd>' + esc(f[1]) + '</dd></div>'; }).join('');
+    document.getElementById('aboutLooking').textContent = P.about.lookingFor;
   }
-  function resizeCanvas() {
-    var rect = panel.getBoundingClientRect(); W = Math.max(1, Math.floor(rect.width)); H = Math.max(1, Math.floor(rect.height));
-    canvas.width = W * DPR; canvas.height = H * DPR; ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    buildParticles();
-  }
-  resizeCanvas();
-  window.addEventListener('resize', resizeCanvas);
-  var pointer = { x: -9999, y: -9999, active: false };
-  function setPointer(cx, cy) { var r = panel.getBoundingClientRect(); pointer.x = cx - r.left; pointer.y = cy - r.top; pointer.active = true; }
-  panel.addEventListener('mousemove', function (e) { setPointer(e.clientX, e.clientY); });
-  panel.addEventListener('mouseleave', function () { pointer.active = false; });
-  panel.addEventListener('touchmove', function (e) { if (e.touches[0]) setPointer(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
-  panel.addEventListener('touchend', function () { pointer.active = false; });
-  function draw() {
-    ctx.clearRect(0, 0, W, H);
-    var rr = Math.min(W, H) * 0.17, a = accent();
-    for (var i = 0; i < particles.length; i++) {
-      var p = particles[i];
-      if (!reduceMotion) {
-        p.vx += (p.hx - p.x) * 0.055; p.vy += (p.hy - p.y) * 0.055;
-        if (pointer.active) { var dx = p.x - pointer.x, dy = p.y - pointer.y, dist = Math.sqrt(dx * dx + dy * dy) || 0.0001; if (dist < rr) { var f = (1 - dist / rr) * 3.4; p.vx += dx / dist * f; p.vy += dy / dist * f; } }
-        p.vx *= 0.84; p.vy *= 0.84; p.x += p.vx; p.y += p.vy;
-      }
-      var scatter = Math.min(1, Math.hypot(p.x - p.hx, p.y - p.hy) / 46);
-      ctx.fillStyle = rgba(a, Math.max(0.12, 0.95 - p.shade * 0.9 - scatter * 0.35));
-      ctx.fillRect(p.x, p.y, 2.1, 2.1);
-    }
-    requestAnimationFrame(draw);
-  }
-  requestAnimationFrame(draw);
+  if (matchMedia('(pointer: coarse)').matches) { var h = document.querySelector('.hint-desk'); if (h) h.textContent = 'Scroll to feed it. Press and hold to pull harder.'; }
 })();
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="nikhil-stars.js"></script>
+<script src="blackhole.js"></script>
 </body>
 </html>
