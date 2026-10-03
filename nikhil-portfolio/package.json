@@ -1,0 +1,10 @@
+{
+  "name": "nikhil-portfolio",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Nikhil Kumar's portfolio: three designs (3D, Newspaper, Vending machine) behind one switch.",
+  "scripts": {
+    "dev": "npx --yes serve .",
+    "build:vending": "node source/vending/build-site.js"
+  }
+}

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nikhil Kumar — 3D</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('portfolio-theme');
+      document.documentElement.setAttribute('data-theme', saved === 'dark' ? 'dark' : 'light');
+    } catch (e) { document.documentElement.setAttribute('data-theme', 'light'); }
+  })();
+</script>
+<style>
+  :root {
+    --bg: #FCFCFA; --bg-raised: #F2F1EC; --text: #0A0A0A; --text-soft: rgba(10,10,10,0.56);
+    --line: rgba(10,10,10,0.12); --accent: #E4002B;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  :root[data-theme="dark"] {
+    --bg: #0A0A0A; --bg-raised: #151513; --text: #F5F4F0; --text-soft: rgba(245,244,240,0.56);
+    --line: rgba(245,244,240,0.14); --accent: #FF3B3B; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); overflow-x: clip; }
+  body { transition: background-color 0.4s ease, color 0.4s ease; }
+  .section-inner { max-width: 1180px; margin: 0 auto; padding: 0 clamp(20px, 4vw, 44px); }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tag { font-size: 11px; border: 1px solid currentColor; opacity: 0.75; padding: 3px 9px; border-radius: 999px; }
+
+  .stage { position: relative; min-height: calc(100vh - 20px); display: flex; flex-direction: column; justify-content: space-between; padding: clamp(20px, 4vw, 44px); }
+  .topbar { display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 5; }
+  .nav-links { display: flex; gap: 28px; font-size: 14px; }
+  .nav-links a { color: var(--text-soft); text-decoration: none; transition: color 0.2s ease; }
+  .nav-links a:hover { color: var(--text); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .theme-toggle { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line); background: var(--bg-raised); color: var(--text); cursor: pointer; font-size: 15px; }
+
+  .hero { position: relative; display: grid; grid-template-columns: 1.1fr 0.9fr; align-items: center; gap: 24px; flex: 1; padding-top: clamp(24px, 6vh, 64px); }
+  .hero-copy { position: relative; z-index: 3; }
+  .hero h1 { margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: clamp(3.4rem, 9.5vw, 8.2rem); line-height: 0.86; letter-spacing: -0.03em; text-transform: uppercase; }
+  .hero h1 .line { display: block; overflow: hidden; }
+  .hero h1 .line span { display: inline-block; transform: translateY(115%); opacity: 0; }
+  .reveal-ready .hero h1 .line span { animation: rise 0.9s cubic-bezier(0.16,1,0.3,1) forwards; }
+  .reveal-ready .hero h1 .line:nth-child(2) span { animation-delay: .08s; }
+  @keyframes rise { to { transform: translateY(0); opacity: 1; } }
+  .hero .role { margin: 26px 0 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: clamp(1.1rem, 2vw, 1.5rem); color: var(--accent); opacity: 0; }
+  .hero p.subtitle { max-width: 40ch; margin: 12px 0 0; font-size: clamp(1rem, 1.6vw, 1.15rem); line-height: 1.5; color: var(--text-soft); opacity: 0; }
+  .reveal-ready .hero .role, .reveal-ready .hero p.subtitle { animation: fadeUp 0.8s ease forwards; animation-delay: 0.6s; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .form-panel { position: relative; height: clamp(320px, 52vw, 620px); }
+  #form-canvas { width: 100%; height: 100%; display: block; }
+  .form-caption { position: absolute; bottom: 4px; left: 0; right: 0; text-align: center; font-size: 12px; color: var(--text-soft); opacity: 0; }
+  .reveal-ready .form-caption { animation: fadeUp 0.8s ease forwards; animation-delay: 1s; }
+  .foot-row { display: flex; justify-content: space-between; align-items: flex-end; position: relative; z-index: 3; opacity: 0; }
+  .reveal-ready .foot-row { animation: fadeUp 0.8s ease forwards; animation-delay: 0.85s; }
+  .status-mark { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-soft); }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+  .scroll-cue { display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 11px; color: var(--text-soft); }
+  .scroll-cue .stem { width: 1px; height: 34px; background: var(--line); position: relative; overflow: hidden; }
+  .scroll-cue .stem::after { content: ''; position: absolute; top: -100%; left: 0; width: 100%; height: 100%; background: var(--text); animation: drip 1.8s ease-in-out infinite; }
+  @keyframes drip { 0% { top: -100%; } 60% { top: 100%; } 100% { top: 100%; } }
+
+  .section-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; margin-bottom: 32px; flex-wrap: wrap; }
+  .section-head h2 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: clamp(1.6rem, 3vw, 2.4rem); margin: 0; letter-spacing: -0.01em; }
+  .section-head p { margin: 0; color: var(--text-soft); font-size: 14px; max-width: 32ch; text-align: right; }
+
+  .explore { padding: 80px 0 60px; border-top: 1px solid var(--line); }
+  .drag-track { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x proximity; cursor: grab; padding-bottom: 6px; scrollbar-width: none; }
+  .drag-track::-webkit-scrollbar { display: none; }
+  .drag-track.dragging { cursor: grabbing; scroll-snap-type: none; }
+  .tile { flex: 0 0 auto; scroll-snap-align: start; width: 168px; height: 120px; border: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font-size: 15px; background: var(--bg-raised); transition: border-color 0.25s ease, transform 0.25s ease; user-select: none; }
+  .tile small { font-size: 11px; color: var(--text-soft); }
+  .tile:hover { border-color: var(--text); transform: translateY(-3px); }
+  .drag-hint { margin-top: 14px; font-size: 12px; color: var(--text-soft); }
+
+  .work { padding: 20px 0 90px; }
+  .work-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  .work-card { position: relative; background: var(--bg); padding: 34px 28px; min-height: 280px; overflow: hidden; }
+  .work-card .cat { font-size: 12px; color: var(--text-soft); margin-bottom: 10px; }
+  .work-card h3 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 1.5rem; margin: 0; letter-spacing: -0.01em; }
+  .work-card .stat { margin-top: 18px; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 2.6rem; letter-spacing: -0.02em; color: var(--accent); }
+  .work-card .stat small { display: block; font-family: 'Inter', sans-serif; font-weight: 400; font-size: 12px; letter-spacing: 0; color: var(--text-soft); }
+  .work-card .hover-layer { position: absolute; inset: 0; padding: 30px 28px; background: var(--text); color: var(--bg); opacity: 0; transform: translateY(8px); display: flex; flex-direction: column; justify-content: center; transition: opacity 0.35s ease, transform 0.35s ease; }
+  .work-card:hover .hover-layer, .work-card:focus-within .hover-layer, .work-card:focus .hover-layer { opacity: 1; transform: translateY(0); }
+  .work-card .hover-layer p { margin: 0 0 14px; font-size: 14px; line-height: 1.5; opacity: 0.88; }
+  @media (max-width: 900px) { .work-grid { grid-template-columns: 1fr; } }
+
+  .timeline { padding: 20px 0 90px; }
+  .tl { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+  .tl li { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 24px; padding: 22px 0; border-bottom: 1px solid var(--line); }
+  .tl .when { font-size: 13px; color: var(--text-soft); padding-top: 4px; }
+  .tl h3 { margin: 0 0 6px; font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.25rem; }
+  .tl h3 span { color: var(--text-soft); font-weight: 500; }
+  .tl p { margin: 0; color: var(--text-soft); line-height: 1.55; max-width: 70ch; }
+  @media (max-width: 640px) { .tl li { grid-template-columns: 1fr; gap: 6px; } }
+
+  .about { padding: 90px 0; border-top: 1px solid var(--line); }
+  .about-copy { max-width: 58ch; font-size: clamp(1.1rem, 2vw, 1.4rem); line-height: 1.55; margin: 0; }
+  .marquee-wrap { margin-top: 56px; overflow: hidden; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 22px 0; }
+  .marquee-track { display: flex; gap: 56px; width: max-content; animation: scroll-left 30s linear infinite; }
+  .marquee-track span { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 1.1rem; color: var(--text-soft); white-space: nowrap; }
+  @keyframes scroll-left { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  .contact { padding: 110px 0 60px; }
+  .contact h2 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: clamp(2.4rem, 7vw, 5rem); letter-spacing: -0.02em; margin: 0 0 34px; line-height: 0.95; }
+  .contact-links { display: flex; flex-wrap: wrap; gap: 14px 28px; margin-bottom: 70px; }
+  .contact-links a { color: var(--text); text-decoration: none; font-size: 15px; border-bottom: 1px solid var(--line); padding-bottom: 2px; transition: color 0.2s ease, border-color 0.2s ease; }
+  .contact-links a:hover { border-color: var(--accent); color: var(--accent); }
+  .legal-row { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; font-size: 12px; color: var(--text-soft); border-top: 1px solid var(--line); padding-top: 20px; }
+
+  @media (max-width: 820px) {
+    .hero { grid-template-columns: 1fr; }
+    .form-panel { height: 46vh; order: -1; }
+    .hero h1 { font-size: clamp(2.8rem, 15vw, 4.4rem); }
+    .foot-row { flex-direction: column; align-items: flex-start; gap: 18px; }
+    .section-head { flex-direction: column; align-items: flex-start; }
+    .section-head p { text-align: left; }
+    .nav-links { gap: 18px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero h1 .line span, .hero .role, .hero p.subtitle, .form-caption, .foot-row, .marquee-track { animation: none !important; opacity: 1 !important; transform: none !important; }
+    .scroll-cue .stem::after { animation: none; }
+    html { scroll-behavior: auto; }
+  }
+
+  /* ---------- first page: Nikhil in stars + the black hole (always dark, it's space) ---------- */
+  .space { position: relative; height: 210vh; background: radial-gradient(ellipse 60% 50% at 70% 18%, #1a0d10 0%, transparent 70%), radial-gradient(ellipse 50% 60% at 15% 90%, #0b0d1e 0%, transparent 70%), #040309;
+    --text: #F5F4F0; --text-soft: rgba(245,244,240,0.6); --line: rgba(245,244,240,0.16); --bg-raised: #14121a; --accent: #FF3B3B; color: var(--text); }
+  .space-pin { position: sticky; top: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; padding: clamp(20px, 4vw, 44px); touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+  #bh { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .space .topbar, .space .hero-copy, .space .foot-row { position: relative; z-index: 3; }
+  .space .hero-copy { max-width: 620px; margin-top: auto; margin-bottom: auto; transform: translateY(calc(var(--feed, 0) * -40px)); opacity: calc(1 - var(--feed, 0) * 0.5); pointer-events: none; }
+  .space .hero-copy a { pointer-events: auto; }
+  .space h1 { margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: clamp(3.4rem, 9vw, 8.4rem); line-height: 0.86; letter-spacing: -0.03em; text-transform: uppercase; }
+  .space h1 span { display: block; }
+  .space h1 span:last-child { -webkit-text-stroke: 1.5px var(--text); color: transparent; }
+  .space .role { margin: 24px 0 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: clamp(1.1rem, 2vw, 1.5rem); color: var(--accent); }
+  .space .subtitle { max-width: 40ch; margin: 12px 0 0; font-size: clamp(1rem, 1.5vw, 1.12rem); line-height: 1.5; color: var(--text-soft); }
+  .space .reveal { opacity: 0; }
+  .bh-hud { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--text-soft); }
+  .bh-hud b { color: #ffb070; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .bh-hint { display: inline-flex; align-items: center; gap: 8px; }
+  .bh-hint i { width: 7px; height: 7px; border-radius: 50%; background: #ff9a4a; box-shadow: 0 0 10px #ff9a4a; }
+  .space .foot-row { opacity: 1; animation: none; }
+  .space .theme-toggle { background: rgba(255,255,255,.06); }
+  @media (max-width: 760px) {
+    .space-pin { justify-content: space-between; }
+    .space .hero-copy { margin: auto 0 0; padding: 120px 0 8px; background: linear-gradient(to top, rgba(4,3,9,.92) 40%, rgba(4,3,9,0)); margin-left: -20px; margin-right: -20px; padding-left: 20px; padding-right: 20px; }
+    .space h1 { font-size: clamp(2.6rem, 14vw, 4rem); }
+    .space .subtitle { display: none; }
+    .space .role { margin-top: 12px; }
+    .space .foot-row { flex-direction: row; align-items: flex-end; }
+    .space .scroll-cue { display: none; }
+  }
+  .more { display: inline-flex; gap: 6px; align-items: center; margin-top: 16px; font-size: 13px; font-weight: 600; color: inherit; text-decoration: none; border-bottom: 1px solid currentColor; padding-bottom: 2px; align-self: flex-start; }
+  .more:hover { color: var(--accent); }
+  .index { padding: 10px 0 90px; }
+  .index-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); counter-reset: n; }
+  .index-list a { display: grid; grid-template-columns: 56px minmax(0,1fr) auto 28px; gap: 18px; align-items: baseline; padding: 18px 4px; border-bottom: 1px solid var(--line); color: var(--text); text-decoration: none; transition: padding .3s ease, background .3s ease; }
+  .index-list a:hover, .index-list a:focus-visible { padding-left: 16px; background: var(--bg-raised); }
+  .index-list .code { font-size: 12px; color: var(--text-soft); font-variant-numeric: tabular-nums; }
+  .index-list .t { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: clamp(1.05rem, 2vw, 1.4rem); }
+  .index-list .m { font-size: 12px; color: var(--text-soft); white-space: nowrap; }
+  .index-list .ar { color: var(--accent); transition: transform .3s ease; }
+  .index-list a:hover .ar { transform: translateX(4px); }
+  @media (max-width: 640px) { .index-list a { grid-template-columns: 40px minmax(0,1fr) 20px; } .index-list .m { display: none; } }
+  .about-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 72px); }
+  .about-head { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: clamp(2rem, 4.6vw, 3.6rem); line-height: 1; letter-spacing: -0.02em; margin: 0 0 28px; }
+  .about-body p { font-size: clamp(1.02rem, 1.5vw, 1.15rem); line-height: 1.65; margin: 0 0 18px; max-width: 60ch; }
+  .about-body p:first-child::first-letter { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; float: left; font-size: 3.6em; line-height: .82; margin: 6px 10px 0 0; color: var(--accent); }
+  .facts { margin: 0; border-top: 1px solid var(--text); }
+  .facts div { display: grid; grid-template-columns: 96px minmax(0,1fr); gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+  .facts dt { color: var(--text-soft); } .facts dd { margin: 0; }
+  .looking { margin-top: 26px; padding: 18px 20px; background: var(--bg-raised); border-left: 3px solid var(--accent); font-size: 15px; line-height: 1.5; }
+  .looking b { display: block; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--text-soft); margin-bottom: 6px; font-weight: 600; }
+  @media (max-width: 820px) { .about-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<section class="space" id="space" aria-label="Introduction">
+  <div class="space-pin">
+    <canvas id="bh" aria-hidden="true"></canvas>
+    <div class="topbar reveal">
+      <nav class="nav-links" aria-label="Sections"><a href="#about">About</a><a href="#work">Work</a><a href="#career">Career</a><a href="#contact">Contact</a></nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">☀</button>
+    </div>
+    <div class="hero-copy">
+      <h1 aria-label="Nikhil Kumar"><span class="reveal">Nikhil</span><span class="reveal">Kumar</span></h1>
+      <p class="role reveal">AI &amp; Backend Engineer</p>
+      <p class="subtitle reveal">I build Python backends and the LLM systems that run on them: RAG pipelines, multi-agent orchestration and APIs on AWS. Backend AI Engineer at Chat360; B.Tech, IIT Jodhpur.</p>
+    </div>
+    <div class="foot-row reveal">
+      <div class="bh-hud">
+        <span class="bh-hint"><i></i><span class="hint-desk">Scroll to feed the black hole. Hold to pull harder.</span></span>
+        <span>Stars consumed: <b id="bhCount">0</b></span>
+      </div>
+      <div class="scroll-cue"><span>Scroll</span><span class="stem"></span></div>
+    </div>
+  </div>
+</section>
+
+<main>
+  <section class="explore" id="stack">
+    <div class="section-inner">
+      <div class="section-head"><h2>What I build with</h2><p>The tools behind the work below</p></div>
+      <div class="drag-track" id="dragTrack" tabindex="0" role="list" aria-label="Tech stack, scrollable">
+        <div class="tile" role="listitem">Python<small>Language</small></div>
+        <div class="tile" role="listitem">FastAPI<small>Backend</small></div>
+        <div class="tile" role="listitem">Django REST<small>Backend</small></div>
+        <div class="tile" role="listitem">LangGraph<small>AI / LLM</small></div>
+        <div class="tile" role="listitem">LangChain<small>AI / LLM</small></div>
+        <div class="tile" role="listitem">MCP<small>AI / LLM</small></div>
+        <div class="tile" role="listitem">Pinecone<small>Vector DB</small></div>
+        <div class="tile" role="listitem">Redis<small>Database</small></div>
+        <div class="tile" role="listitem">PostgreSQL<small>Database</small></div>
+        <div class="tile" role="listitem">RabbitMQ<small>Backend</small></div>
+        <div class="tile" role="listitem">AWS<small>Cloud</small></div>
+        <div class="tile" role="listitem">Docker<small>DevOps</small></div>
+        <div class="tile" role="listitem">React<small>Frontend</small></div>
+      </div>
+      <p class="drag-hint">Drag, scroll, or use arrow keys</p>
+    </div>
+  </section>
+
+  <section class="work" id="work">
+    <div class="section-inner">
+      <div class="section-head"><h2>Selected work</h2><p>Hover or focus a card for details</p></div>
+      <div class="work-grid">
+        <article class="work-card" tabindex="0">
+          <div class="cat">Chat360 · 2025</div><h3>Agentic Omnichannel Memory</h3>
+          <div class="stat">98%<small>cross-channel identity match accuracy</small></div>
+          <div class="hover-layer"><p>A unified memory layer across WhatsApp, web, Instagram, Messenger and voice. Bots keep short- and long-term memory across sessions; LLM-written session summaries are injected into prompts, cutting repeat questions and inference cost.</p><div class="tags"><span class="tag">Python</span><span class="tag">LLMs</span><span class="tag">Identity resolution</span></div><a class="more" href="project.html?id=memory">Read the full story <span aria-hidden="true">&rarr;</span></a></div>
+        </article>
+        <article class="work-card" tabindex="0">
+          <div class="cat">Self project · 2026</div><h3>AI-Powered OPD Claim Adjudication</h3>
+          <div class="stat">RAG<small>grounded claim decisions</small></div>
+          <div class="hover-layer"><p>Insurance rules plus LLM document analysis. Gemini turns prescriptions and invoices into structured claims; Pinecone RAG over policies and past claims grounds decisions; confidence-aware routing with fraud detection and audit logs.</p><div class="tags"><span class="tag">FastAPI</span><span class="tag">React</span><span class="tag">Gemini</span><span class="tag">Pinecone</span></div><a class="more" href="project.html?id=opd-claims">Read the full story <span aria-hidden="true">&rarr;</span></a></div>
+        </article>
+        <article class="work-card" tabindex="0">
+          <div class="cat">IIT Jodhpur · 2024</div><h3>RL-Based Controller Design</h3>
+          <div class="stat">&lt;1%<small>steady-state error, under 5 iterations</small></div>
+          <div class="hover-layer"><p>A TD3 reinforcement-learning controller pretrained on Model Predictive Control, with a Kalman filter for real-time state estimation. Fault-tolerant control of a Quadruple Tank System.</p><div class="tags"><span class="tag">Python</span><span class="tag">RL (TD3)</span><span class="tag">MPC</span></div><a class="more" href="project.html?id=rl-control">Read the full story <span aria-hidden="true">&rarr;</span></a></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="index" id="projects">
+    <div class="section-inner">
+      <div class="section-head"><h2>All twelve</h2><p>Every project, each with its own page</p></div>
+      <ol class="index-list" id="indexList"></ol>
+    </div>
+  </section>
+
+  <section class="timeline" id="career">
+    <div class="section-inner">
+      <div class="section-head"><h2>Career</h2><p>Most recent first</p></div>
+      <ol class="tl">
+        <li><div class="when">Aug 2025 – Present</div><div><h3>Backend AI Engineer <span>· Chat360</span></h3><p>Multi-agent orchestration on LangGraph under 5s, multimodal PDF image retrieval, an automotive voice-and-image bot, API observability on Celery, RabbitMQ and ClickHouse, an “Ask-AI” analytics agent, RAG tuning and a Redis semantic cache.</p></div></li>
+        <li><div class="when">Jun – Aug 2025</div><div><h3>Backend AI Engineer Intern <span>· Chat360</span></h3><p>Fixed client-reported issues across production GenAI products; built an agentic ingestion pipeline (JinaAI scraping, chunking, Pinecone embeddings) for grounded answers.</p></div></li>
+        <li><div class="when">Jul 2024</div><div><h3>Amazon ML Summer School <span>· Amazon</span></h3><p>[What you built there: the models, datasets or assignments, and the result.]</p></div></li>
+        <li><div class="when">Jun – Jul 2024</div><div><h3>Data Analyst Intern <span>· Afame Technologies</span></h3><p>Global COVID-19 data analysis and visualisation; a life-expectancy model accurate to about 95%.</p></div></li>
+        <li><div class="when">May 2025</div><div><h3>B.Tech, Chemical Engineering <span>· IIT Jodhpur</span></h3><p>Reinforcement-learning control research; Formula 1 Club website (React, Node.js, MongoDB, WebRTC).</p></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="about" id="about">
+    <div class="section-inner">
+      <div class="section-head"><h2>About me</h2><p>The part that isn't on the resume</p></div>
+      <div class="about-grid">
+        <div>
+          <p class="about-head" id="aboutHead"></p>
+          <div class="about-body" id="aboutBody"></div>
+        </div>
+        <div>
+          <dl class="facts" id="aboutFacts"></dl>
+          <div class="looking"><b>Looking for</b><span id="aboutLooking"></span></div>
+        </div>
+      </div>
+      <div class="marquee-wrap" aria-hidden="true">
+        <div class="marquee-track">
+          <span>Chat360</span><span>IIT Jodhpur</span><span>Amazon ML Summer School</span><span>Afame Technologies</span><span>Air Force School, Pune</span>
+          <span>Chat360</span><span>IIT Jodhpur</span><span>Amazon ML Summer School</span><span>Afame Technologies</span><span>Air Force School, Pune</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="contact" id="contact">
+    <div class="section-inner">
+      <h2>Let's build<br>something.</h2>
+      <div class="contact-links">
+        <a href="mailto:nikhil385713@gmail.com">nikhil385713@gmail.com</a>
+        <a href="#" data-todo="github-url">GitHub</a>
+        <a href="#" data-todo="linkedin-url">LinkedIn</a>
+        <a href="#" data-todo="resume-url">Resume</a>
+      </div>
+      <div class="legal-row"><span>Nikhil Kumar · AI &amp; Backend Engineer</span><span>© 2026</span></div>
+    </div>
+  </footer>
+</main>
+
+<script src="../shared/content.js"></script>
+<script>
+(function () {
+  var root = document.documentElement;
+  var themeBtn = document.getElementById('themeToggle');
+  function syncTheme() { themeBtn.textContent = root.getAttribute('data-theme') === 'dark' ? '☾' : '☀'; }
+  syncTheme();
+  themeBtn.addEventListener('click', function () {
+    var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next); syncTheme();
+    try { localStorage.setItem('portfolio-theme', next); } catch (e) {}
+  });
+  var track = document.getElementById('dragTrack');
+  var isDown = false, startX = 0, startScroll = 0;
+  track.addEventListener('pointerdown', function (e) { isDown = true; track.setPointerCapture(e.pointerId); startX = e.clientX; startScroll = track.scrollLeft; track.classList.add('dragging'); });
+  track.addEventListener('pointermove', function (e) { if (isDown) track.scrollLeft = startScroll - (e.clientX - startX); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (evt) { track.addEventListener(evt, function () { isDown = false; track.classList.remove('dragging'); }); });
+  track.addEventListener('keydown', function (e) { if (e.key === 'ArrowRight') track.scrollLeft += 180; if (e.key === 'ArrowLeft') track.scrollLeft -= 180; });
+
+  /* content shared with the other designs */
+  var P = window.PORTFOLIO;
+  if (P) {
+    var esc = function (t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;'); };
+    document.getElementById('indexList').innerHTML = P.projects.map(function (p) {
+      return '<li><a href="project.html?id=' + p.id + '"><span class="code">' + p.code + '</span><span class="t">' + esc(p.title) + '</span><span class="m">' + esc(p.org) + ' · ' + esc(p.period) + '</span><span class="ar" aria-hidden="true">&rarr;</span></a></li>';
+    }).join('');
+    document.getElementById('aboutHead').textContent = P.about.headline;
+    document.getElementById('aboutBody').innerHTML = P.about.paras.map(function (t) { return '<p>' + esc(t) + '</p>'; }).join('');
+    document.getElementById('aboutFacts').innerHTML = P.about.facts.map(function (f) { return '<div><dt>' + esc(f[0]) + '</dt><dd>' + esc(f[1]) + '</dd></div>'; }).join('');
+    document.getElementById('aboutLooking').textContent = P.about.lookingFor;
+  }
+  if (matchMedia('(pointer: coarse)').matches) { var h = document.querySelector('.hint-desk'); if (h) h.textContent = 'Scroll to feed it. Press and hold to pull harder.'; }
+})();
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="nikhil-stars.js"></script>
+<script src="blackhole.js"></script>
+</body>
+</html>
