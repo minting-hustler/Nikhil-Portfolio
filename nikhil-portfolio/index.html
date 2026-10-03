@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nikhil Kumar — AI &amp; Backend Engineer</title>
+<meta name="description" content="Portfolio of Nikhil Kumar, AI & Backend Engineer. Three ways to read it: 3D, Newspaper, Vending machine.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root { --bar: 52px; --ink: #f5f4f0; --soft: rgba(245,244,240,.6); --accent: #ffd21f; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #0c0a10; color: var(--ink); font-family: 'Inter', system-ui, sans-serif; overflow: hidden; }
+
+  /* top bar: name on the left, the three-way switch in the middle */
+  .bar { position: fixed; top: 0; left: 0; right: 0; z-index: 10; height: calc(var(--bar) + env(safe-area-inset-top, 0px)); padding: env(safe-area-inset-top, 0px) 16px 0; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; background: rgba(12,10,16,.92); backdrop-filter: blur(14px) saturate(160%); -webkit-backdrop-filter: blur(14px) saturate(160%); border-bottom: 1px solid rgba(255,255,255,.08); }
+  .me { font-size: 13px; font-weight: 600; letter-spacing: .02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .me span { color: var(--soft); font-weight: 400; }
+  .switch { position: relative; display: flex; gap: 2px; padding: 4px; border-radius: 999px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); }
+  .pill { position: absolute; top: 4px; left: 0; height: calc(100% - 8px); border-radius: 999px; background: var(--ink); transition: transform .45s cubic-bezier(.65,0,.35,1), width .45s cubic-bezier(.65,0,.35,1); }
+  .switch button { position: relative; z-index: 1; border: 0; background: transparent; color: var(--soft); font: 500 13px/1 'Inter', sans-serif; padding: 9px 16px; border-radius: 999px; cursor: pointer; white-space: nowrap; transition: color .3s; }
+  .switch button[aria-selected="true"] { color: #0c0a10; }
+  .switch button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .right { justify-self: end; font-size: 12px; }
+  .right a { color: var(--soft); text-decoration: none; border-bottom: 1px solid rgba(255,255,255,.2); }
+  .right a:hover { color: var(--ink); }
+
+  /* each design runs in its own frame, so their styles and scripts never collide */
+  .views { position: fixed; top: calc(var(--bar) + env(safe-area-inset-top, 0px)); left: 0; right: 0; bottom: 0; }
+  .views iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #0c0a10; opacity: 0; visibility: hidden; transition: opacity .35s ease, visibility 0s linear .35s; }
+  .views iframe.on { opacity: 1; visibility: visible; transition: opacity .35s ease; }
+
+  @media (max-width: 640px) {
+    .bar { grid-template-columns: 1fr auto; }
+    .right { display: none; }
+    .switch button { padding: 8px 11px; font-size: 12px; }
+  }
+  @media (max-width: 400px) { .me span { display: none; } }
+  @media (prefers-reduced-motion: reduce) { .pill, .views iframe { transition: none; } }
+</style>
+</head>
+<body>
+<header class="bar">
+  <div class="me">Nikhil Kumar <span>· AI &amp; Backend Engineer</span></div>
+  <div class="switch" role="tablist" aria-label="Choose how to view this portfolio">
+    <span class="pill" id="pill" aria-hidden="true"></span>
+    <button role="tab" id="tab-3d" data-view="3d" aria-controls="view-3d" aria-selected="false">3D</button>
+    <button role="tab" id="tab-newspaper" data-view="newspaper" aria-controls="view-newspaper" aria-selected="false">Newspaper</button>
+    <button role="tab" id="tab-vending" data-view="vending" aria-controls="view-vending" aria-selected="false">Vending</button>
+  </div>
+  <div class="right"><a href="mailto:nikhil385713@gmail.com">nikhil385713@gmail.com</a></div>
+</header>
+
+<main class="views">
+  <iframe id="view-3d" title="Portfolio: 3D" data-src="sites/3d/" role="tabpanel" aria-labelledby="tab-3d"></iframe>
+  <iframe id="view-newspaper" title="Portfolio: Newspaper" data-src="sites/newspaper/" role="tabpanel" aria-labelledby="tab-newspaper"></iframe>
+  <iframe id="view-vending" title="Portfolio: Vending machine" data-src="sites/vending/" role="tabpanel" aria-labelledby="tab-vending"></iframe>
+</main>
+
+<script>
+(function () {
+  var VIEWS = ['3d', 'newspaper', 'vending'];
+  var DEFAULT = 'vending';
+  var tabs = document.querySelectorAll('.switch button');
+  var pill = document.getElementById('pill');
+
+  function movePill(btn) {
+    pill.style.width = btn.offsetWidth + 'px';
+    pill.style.transform = 'translateX(' + btn.offsetLeft + 'px)';
+  }
+
+  function show(name, push) {
+    if (VIEWS.indexOf(name) < 0) name = DEFAULT;
+    VIEWS.forEach(function (v) {
+      var frame = document.getElementById('view-' + v);
+      var tab = document.getElementById('tab-' + v);
+      var on = v === name;
+      // load a design the first time it is opened, then keep it alive so its state survives
+      if (on && !frame.getAttribute('src')) frame.setAttribute('src', frame.dataset.src);
+      frame.classList.toggle('on', on);
+      tab.setAttribute('aria-selected', on ? 'true' : 'false');
+      tab.tabIndex = on ? 0 : -1;
+      if (on) movePill(tab);
+    });
+    if (push && location.hash !== '#' + name) history.replaceState(null, '', '#' + name);
+    try { localStorage.setItem('portfolio-view', name); } catch (e) {}
+  }
+
+  tabs.forEach(function (t, i) {
+    t.addEventListener('click', function () { show(t.dataset.view, true); });
+    t.addEventListener('keydown', function (e) {
+      var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      if (!d) return;
+      var next = tabs[(i + d + tabs.length) % tabs.length];
+      next.focus(); show(next.dataset.view, true);
+    });
+  });
+
+  var start = location.hash.slice(1);
+  if (VIEWS.indexOf(start) < 0) { try { start = localStorage.getItem('portfolio-view'); } catch (e) {} }
+  show(start || DEFAULT, true);
+  window.addEventListener('hashchange', function () { show(location.hash.slice(1), false); });
+  window.addEventListener('resize', function () { movePill(document.querySelector('.switch button[aria-selected="true"]')); });
+  if (document.fonts) document.fonts.ready.then(function () { movePill(document.querySelector('.switch button[aria-selected="true"]')); });
+})();
+</script>
+</body>
+</html>
